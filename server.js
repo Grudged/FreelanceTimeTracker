@@ -7,6 +7,9 @@ const morgan = require('morgan');
 // Load environment variables FIRST
 require('dotenv').config({ path: __dirname + '/.env' });
 
+// Import routes
+const apiRoutes = require('./src/routes');
+
 const app = express();
 
 // CORS configuration for your Angular frontend
@@ -20,8 +23,8 @@ const corsOptions = {
 app.use(helmet());
 app.use(cors(corsOptions));
 app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Basic health check route
 app.get('/api/health', (req, res) => {
@@ -29,9 +32,13 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     message: 'Freelancer Time Tracker API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
   });
 });
+
+// API routes
+app.use('/api', apiRoutes);
 
 // Database connection with better error handling
 const connectDB = async () => {
