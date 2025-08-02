@@ -7,6 +7,7 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 import { AuthService } from './services/auth.service';
 import { ProjectService } from './services/project.service';
 import { TimeEntryService } from './services/time-entry.service';
+import { ThemeService } from './services/theme.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     AuthService,
     ProjectService,
-    TimeEntryService
+    TimeEntryService,
+    ThemeService
   ]
 };

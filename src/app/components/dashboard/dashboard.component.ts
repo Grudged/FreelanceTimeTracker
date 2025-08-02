@@ -4,11 +4,12 @@ import { RouterLink, Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
 import { ProjectService, Project, ProjectStats } from '../../services/project.service';
 import { TimeEntryService, TimeStats } from '../../services/time-entry.service';
+import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ThemeSelectorComponent],
   template: `
     <div class="dashboard-container">
       <!-- Navigation Header -->
@@ -21,6 +22,8 @@ import { TimeEntryService, TimeStats } from '../../services/time-entry.service';
         <div class="nav-menu">
           <a routerLink="/projects" class="nav-link">Projects</a>
           <a routerLink="/projects/new" class="nav-link btn-outline">New Project</a>
+          
+          <app-theme-selector></app-theme-selector>
           
           <div class="profile-dropdown">
             <button class="profile-btn" (click)="toggleProfileMenu()">

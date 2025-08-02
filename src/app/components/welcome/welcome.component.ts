@@ -2,13 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ThemeSelectorComponent],
   template: `
     <div class="welcome-container">
+      <div class="theme-selector-container">
+        <app-theme-selector></app-theme-selector>
+      </div>
+      
       <div class="welcome-content">
         <div class="hero-section">
           <h1 class="hero-title">Stack to the Future</h1>
@@ -62,7 +67,7 @@ import { AuthService } from '../../services/auth.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1a2e1a 0%, #2d4a2d 50%, #3d5a3d 100%);
+      background: var(--color-background, linear-gradient(135deg, #1a2e1a 0%, #2d4a2d 50%, #3d5a3d 100%));
       background-attachment: fixed;
       padding: 2rem;
       position: relative;
@@ -82,10 +87,17 @@ import { AuthService } from '../../services/auth.service';
       pointer-events: none;
     }
 
+    .theme-selector-container {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+    }
+
     .welcome-content {
       max-width: 600px;
       text-align: center;
-      color: #f0fff0;
+      color: var(--color-text-primary, #f0fff0);
       position: relative;
       z-index: 1;
     }
@@ -99,6 +111,7 @@ import { AuthService } from '../../services/auth.service';
       font-weight: 700;
       margin-bottom: 0.5rem;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      color: var(--color-text-primary, #f0fff0);
     }
 
     .hero-subtitle {
@@ -106,6 +119,7 @@ import { AuthService } from '../../services/auth.service';
       font-weight: 300;
       margin-bottom: 1rem;
       opacity: 0.9;
+      color: var(--color-text-secondary, #e8f5e8);
     }
 
     .hero-description {
@@ -114,6 +128,7 @@ import { AuthService } from '../../services/auth.service';
       opacity: 0.8;
       max-width: 500px;
       margin: 0 auto;
+      color: var(--color-text-secondary, #e8f5e8);
     }
 
     .action-buttons {
@@ -195,14 +210,14 @@ import { AuthService } from '../../services/auth.service';
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
       font-weight: 600;
-      color: #a6d4a6;
+      color: var(--color-accent, #a6d4a6);
     }
 
     .feature p {
       font-size: 0.9rem;
       opacity: 0.8;
       line-height: 1.4;
-      color: #e0f0e0;
+      color: var(--color-text-secondary, #e0f0e0);
     }
 
     @media (max-width: 768px) {
