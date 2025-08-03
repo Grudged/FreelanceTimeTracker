@@ -158,6 +158,14 @@ A comprehensive time tracking application built for freelancers to manage projec
 4. **Track Time**: Navigate to your project and add time entries
 5. **Monitor Progress**: View analytics on the dashboard
 
+### Demo/Test Credentials
+
+For testing purposes, you can create an account with these credentials:
+- **Email**: `demo@freelancetracker.com`
+- **Password**: `password123`
+
+Or use any email/password combination when registering - the system will create a new account for you.
+
 ### Project Management
 
 - **Project Creation**: Include client name, hourly rate, estimated hours

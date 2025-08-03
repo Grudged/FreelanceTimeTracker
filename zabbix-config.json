@@ -1,0 +1,146 @@
+{
+  "zabbix_export": {
+    "version": "6.4",
+    "date": "2025-08-02T17:05:00Z",
+    "groups": [
+      {
+        "uuid": "12345678-1234-1234-1234-123456789001",
+        "name": "FreelanceTimeTracker"
+      }
+    ],
+    "templates": [
+      {
+        "uuid": "12345678-1234-1234-1234-123456789002",
+        "template": "FreelanceTimeTracker Template",
+        "name": "FreelanceTimeTracker Template",
+        "groups": [
+          {
+            "name": "FreelanceTimeTracker"
+          }
+        ],
+        "items": [
+          {
+            "uuid": "12345678-1234-1234-1234-123456789003",
+            "name": "API Health Status",
+            "type": "HTTP",
+            "key": "api.health.status",
+            "delay": "60s",
+            "value_type": "TEXT",
+            "timeout": "15s",
+            "url": "http://localhost:3000/api/health",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "preprocessing": [
+              {
+                "type": "JSONPATH",
+                "params": "$.status"
+              }
+            ],
+            "triggers": [
+              {
+                "uuid": "12345678-1234-1234-1234-123456789004",
+                "expression": "last(/FreelanceTimeTracker Template/api.health.status)<>\"OK\"",
+                "name": "API Health Check Failed",
+                "priority": "HIGH",
+                "description": "The FreelanceTimeTracker API health check is not returning OK status"
+              }
+            ]
+          },
+          {
+            "uuid": "12345678-1234-1234-1234-123456789005",
+            "name": "API Response Time",
+            "type": "HTTP",
+            "key": "api.response.time",
+            "delay": "60s",
+            "value_type": "FLOAT",
+            "units": "s",
+            "timeout": "15s",
+            "url": "http://localhost:3000/api/health",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "preprocessing": [
+              {
+                "type": "REGEX",
+                "params": ".*\n(\\d+\\.?\\d*)"
+              }
+            ],
+            "triggers": [
+              {
+                "uuid": "12345678-1234-1234-1234-123456789006",
+                "expression": "last(/FreelanceTimeTracker Template/api.response.time)>5",
+                "name": "API Response Time Too High",
+                "priority": "WARNING",
+                "description": "API response time is greater than 5 seconds"
+              }
+            ]
+          },
+          {
+            "uuid": "12345678-1234-1234-1234-123456789007",
+            "name": "MongoDB Connection Status",
+            "type": "HTTP",
+            "key": "mongodb.connection.status",
+            "delay": "120s",
+            "value_type": "TEXT",
+            "timeout": "15s",
+            "url": "http://localhost:3000/api/health",
+            "headers": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "preprocessing": [
+              {
+                "type": "JSONPATH",
+                "params": "$.status"
+              }
+            ],
+            "triggers": [
+              {
+                "uuid": "12345678-1234-1234-1234-123456789008",
+                "expression": "last(/FreelanceTimeTracker Template/mongodb.connection.status)<>\"OK\"",
+                "name": "MongoDB Connection Failed",
+                "priority": "HIGH",
+                "description": "Cannot connect to MongoDB database"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "hosts": [
+      {
+        "uuid": "12345678-1234-1234-1234-123456789009",
+        "host": "FreelanceTimeTracker-localhost",
+        "name": "FreelanceTimeTracker Local",
+        "groups": [
+          {
+            "name": "FreelanceTimeTracker"
+          }
+        ],
+        "templates": [
+          {
+            "name": "FreelanceTimeTracker Template"
+          }
+        ],
+        "interfaces": [
+          {
+            "type": "AGENT",
+            "ip": "127.0.0.1",
+            "dns": "localhost",
+            "useip": "1",
+            "port": "10050"
+          }
+        ]
+      }
+    ]
+  }
+}

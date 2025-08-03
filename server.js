@@ -9,6 +9,7 @@ require('dotenv').config({ path: __dirname + '/.env' });
 
 // Import routes
 const apiRoutes = require('./src/routes');
+const { healthCheck, detailedMetrics, statusCheck } = require('./monitoring/metrics');
 
 const app = express();
 
@@ -26,16 +27,10 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Basic health check route
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Freelancer Time Tracker API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    version: '1.0.0'
-  });
-});
+// Enhanced monitoring routes
+app.get('/api/health', healthCheck);
+app.get('/api/metrics', detailedMetrics);
+app.get('/api/status', statusCheck);
 
 // API routes
 app.use('/api', apiRoutes);

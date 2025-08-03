@@ -1,0 +1,150 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7-jammy
+    container_name: freelance-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: freelance-timetracker
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # FreelanceTimeTracker Application
+  app:
+    build: .
+    container_name: freelance-app
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/freelance-timetracker?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production-make-it-long-and-random
+      JWT_EXPIRE: 7d
+      FRONTEND_URL: http://localhost:4200
+      BCRYPT_ROUNDS: 12
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for Zabbix
+  zabbix-postgres:
+    image: postgres:15-alpine
+    container_name: zabbix-postgres
+    environment:
+      POSTGRES_DB: zabbix
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_password
+    volumes:
+      - zabbix-postgres-data:/var/lib/postgresql/data
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zabbix"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Zabbix Server
+  zabbix-server:
+    image: zabbix/zabbix-server-pgsql:ubuntu-6.4-latest
+    container_name: zabbix-server
+    environment:
+      DB_SERVER_HOST: zabbix-postgres
+      POSTGRES_DB: zabbix
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_password
+      ZBX_CACHESIZE: 128M
+    ports:
+      - "10051:10051"
+    volumes:
+      - zabbix-server-data:/var/lib/zabbix
+    networks:
+      - monitoring-network
+      - app-network
+    depends_on:
+      zabbix-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Zabbix Web Interface
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:ubuntu-6.4-latest
+    container_name: zabbix-web
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      DB_SERVER_HOST: zabbix-postgres
+      POSTGRES_DB: zabbix
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: zabbix_password
+      PHP_TZ: America/New_York
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring-network
+      - app-network
+    depends_on:
+      - zabbix-server
+      - zabbix-postgres
+    restart: unless-stopped
+
+  # Zabbix Agent (for monitoring the Docker host)
+  zabbix-agent:
+    image: zabbix/zabbix-agent:ubuntu-6.4-latest
+    container_name: zabbix-agent
+    environment:
+      ZBX_HOSTNAME: "Docker Host"
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: 10051
+      ZBX_PASSIVE_ALLOW: true
+      ZBX_ACTIVE_ALLOW: true
+    ports:
+      - "10050:10050"
+    networks:
+      - monitoring-network
+    depends_on:
+      - zabbix-server
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /dev:/host/dev:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  app-network:
+    driver: bridge
+    name: freelance-app-network
+  monitoring-network:
+    driver: bridge
+    name: zabbix-monitoring-network
+
+volumes:
+  mongodb-data:
+    name: freelance-mongodb-data
+  zabbix-postgres-data:
+    name: zabbix-postgres-data
+  zabbix-server-data:
+    name: zabbix-server-data
