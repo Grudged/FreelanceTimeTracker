@@ -3,16 +3,19 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+  // TEMPORARY: Bypass authentication for development
+  return true;
+  
+  // const authService = inject(AuthService);
+  // const router = inject(Router);
 
-  if (authService.isAuthenticated) {
-    return true;
-  }
+  // if (authService.isAuthenticated) {
+  //   return true;
+  // }
 
-  // Redirect to login page with return url
-  router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
-  return false;
+  // // Redirect to login page with return url
+  // router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
+  // return false;
 };
 
 export const guestGuard: CanActivateFn = (route, state) => {

@@ -315,15 +315,17 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
 
     .dashboard-header h2 {
       margin: 0 0 0.5rem 0;
-      color: #333;
+      color: #f0fff0;
       font-size: 2rem;
       font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
     .dashboard-subtitle {
-      color: #666;
+      color: #c7d2c7;
       margin: 0;
       font-size: 1.1rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
     .btn {
@@ -361,16 +363,20 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .stat-card {
-      background: white;
+      background: rgba(74, 124, 74, 0.2) !important;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(74, 124, 74, 0.5) !important;
       padding: 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .stat-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.98);
+      border-color: rgba(74, 124, 74, 0.4);
     }
 
     .stat-header {
@@ -410,10 +416,12 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .dashboard-section {
-      background: white;
+      background: rgba(74, 124, 74, 0.15) !important;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(74, 124, 74, 0.4) !important;
       border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
     }
 
     .section-header {
@@ -447,7 +455,9 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .project-card {
-      border: 1px solid #e1e5e9;
+      background: rgba(74, 124, 74, 0.1) !important;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(74, 124, 74, 0.4) !important;
       border-radius: 8px;
       padding: 1.5rem;
       cursor: pointer;
@@ -455,8 +465,9 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .project-card:hover {
-      border-color: #667eea;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: #4a7c4a;
+      box-shadow: 0 6px 20px rgba(74, 124, 74, 0.3);
       transform: translateY(-2px);
     }
 
