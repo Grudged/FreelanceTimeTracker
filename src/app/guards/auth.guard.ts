@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
-  // TEMPORARY: Bypass authentication for development
+  // TEMPORARY: Bypass auth to see dashboard with test data
   return true;
   
   // const authService = inject(AuthService);

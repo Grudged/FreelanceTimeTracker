@@ -10,6 +10,11 @@ router.use('/auth', authRoutes);
 router.use('/projects', projectRoutes);
 router.use('/time-entries', timeEntryRoutes);
 
+// TEMPORARY: Test endpoint
+router.get('/test', (req, res) => {
+  res.json({ message: 'Test endpoint works!' });
+});
+
 // API documentation endpoint
 router.get('/', (req, res) => {
   res.json({

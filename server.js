@@ -16,20 +16,21 @@ const app = express();
 // CORS configuration for your Angular frontend
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    console.log('🔍 CORS request from origin:', origin);
+    const allowedOrigins = [
+      'http://localhost:4200',
+      'http://127.0.0.1:43503',
+      'http://localhost:43503',
+      'http://127.0.0.1:4200'
+    ];
     
-    // Allow any localhost or 127.0.0.1 with any port
-    if (origin.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/)) {
-      return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowing origin:', origin);
+      callback(null, true);
+    } else {
+      console.log('❌ CORS blocking origin:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
-    
-    // Allow specific environment URL
-    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
-      return callback(null, true);
-    }
-    
-    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   optionsSuccessStatus: 200

@@ -1,0 +1,18 @@
+{
+  "title": "Sample E-commerce Website",
+  "client": "Acme Digital Corp",
+  "description": "Building a modern e-commerce platform with Angular frontend and Node.js backend. Features include user authentication, product catalog, shopping cart, and payment processing.",
+  "isContract": false,
+  "hourlyRate": 85,
+  "currency": "USD",
+  "status": "active",
+  "startDate": "2024-07-15T00:00:00.000Z",
+  "endDate": null,
+  "estimatedHours": 120,
+  "totalHoursWorked": 42.5,
+  "totalEarnings": 3612.50,
+  "tags": ["Angular", "Node.js", "MongoDB", "E-commerce", "Stripe"],
+  "notes": "High-priority project for established client. Modern tech stack with focus on performance and user experience. Payment integration required.",
+  "createdAt": "2024-07-15T09:00:00.000Z",
+  "updatedAt": "2024-08-05T16:30:00.000Z"
+}

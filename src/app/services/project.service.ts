@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface Project {
@@ -70,41 +70,294 @@ export interface ProjectStats {
 export class ProjectService {
   private apiUrl = `${environment.apiUrl}/projects`;
 
+  // Dummy data for development
+  private dummyProjects: Project[] = [
+    {
+      _id: '1',
+      title: 'E-commerce Website Redesign',
+      client: 'TechCorp Solutions',
+      description: 'Complete overhaul of the existing e-commerce platform with modern UI/UX',
+      isContract: true,
+      hourlyRate: 85,
+      currency: 'USD',
+      status: 'active',
+      startDate: '2024-12-01',
+      estimatedHours: 120,
+      totalHoursWorked: 45.5,
+      totalEarnings: 3867.50,
+      userId: 'user1',
+      tags: ['Angular', 'TypeScript', 'UI/UX', 'E-commerce'],
+      notes: 'Client prefers weekly progress updates',
+      createdAt: '2024-12-01T10:00:00Z',
+      updatedAt: '2024-12-15T14:30:00Z',
+      formattedEarnings: '$3,867.50',
+      projectDuration: 14
+    },
+    {
+      _id: '2',
+      title: 'Mobile App Development',
+      client: 'StartupXYZ',
+      description: 'Cross-platform mobile application for fitness tracking',
+      isContract: false,
+      hourlyRate: 75,
+      currency: 'USD',
+      status: 'active',
+      startDate: '2024-11-15',
+      estimatedHours: 200,
+      totalHoursWorked: 78.25,
+      totalEarnings: 5868.75,
+      userId: 'user1',
+      tags: ['React Native', 'Mobile', 'API Integration', 'Firebase'],
+      notes: 'MVP focus for first release',
+      createdAt: '2024-11-15T09:00:00Z',
+      updatedAt: '2024-12-14T16:45:00Z',
+      formattedEarnings: '$5,868.75',
+      projectDuration: 29
+    },
+    {
+      _id: '3',
+      title: 'CRM System Integration',
+      client: 'Enterprise Inc',
+      description: 'Integration of existing CRM with new accounting software',
+      isContract: true,
+      hourlyRate: 95,
+      currency: 'USD',
+      status: 'active',
+      startDate: '2024-12-10',
+      estimatedHours: 80,
+      totalHoursWorked: 12.5,
+      totalEarnings: 1187.50,
+      userId: 'user1',
+      tags: ['Integration', 'API', 'CRM', 'Backend'],
+      notes: 'Requires security clearance documentation',
+      createdAt: '2024-12-10T11:00:00Z',
+      updatedAt: '2024-12-13T10:15:00Z',
+      formattedEarnings: '$1,187.50',
+      projectDuration: 5
+    },
+    {
+      _id: '4',
+      title: 'Website Performance Optimization',
+      client: 'GreenTech Solutions',
+      description: 'Optimize loading times and improve SEO for corporate website',
+      isContract: true,
+      hourlyRate: 70,
+      currency: 'USD',
+      status: 'completed',
+      startDate: '2024-10-01',
+      endDate: '2024-11-30',
+      estimatedHours: 60,
+      totalHoursWorked: 58.75,
+      totalEarnings: 4112.50,
+      userId: 'user1',
+      tags: ['Performance', 'SEO', 'Web Optimization', 'Analytics'],
+      notes: 'Successfully improved page load times by 40%',
+      createdAt: '2024-10-01T08:00:00Z',
+      updatedAt: '2024-11-30T17:00:00Z',
+      formattedEarnings: '$4,112.50',
+      projectDuration: 60
+    },
+    {
+      _id: '5',
+      title: 'Database Migration Project',
+      client: 'DataFlow Corp',
+      description: 'Migrate legacy database to modern cloud solution',
+      isContract: false,
+      hourlyRate: 90,
+      currency: 'USD',
+      status: 'paused',
+      startDate: '2024-11-20',
+      estimatedHours: 100,
+      totalHoursWorked: 25.0,
+      totalEarnings: 2250.00,
+      userId: 'user1',
+      tags: ['Database', 'Migration', 'Cloud', 'SQL'],
+      notes: 'Paused pending client infrastructure setup',
+      createdAt: '2024-11-20T13:00:00Z',
+      updatedAt: '2024-12-05T09:30:00Z',
+      formattedEarnings: '$2,250.00',
+      projectDuration: 24
+    },
+    {
+      _id: '6',
+      title: 'API Documentation Portal',
+      client: 'DevTools Inc',
+      description: 'Create comprehensive API documentation and developer portal',
+      isContract: true,
+      hourlyRate: 65,
+      currency: 'USD',
+      status: 'completed',
+      startDate: '2024-09-15',
+      endDate: '2024-10-20',
+      estimatedHours: 45,
+      totalHoursWorked: 43.5,
+      totalEarnings: 2827.50,
+      userId: 'user1',
+      tags: ['Documentation', 'API', 'Portal', 'Technical Writing'],
+      notes: 'Received excellent feedback from development team',
+      createdAt: '2024-09-15T10:00:00Z',
+      updatedAt: '2024-10-20T15:00:00Z',
+      formattedEarnings: '$2,827.50',
+      projectDuration: 35
+    }
+  ];
+
+  private dummyStats: ProjectStats = {
+    total: 6,
+    active: 3,
+    completed: 2,
+    paused: 1,
+    totalHours: 263.5,
+    totalEarnings: 20113.75
+  };
+
   constructor(private http: HttpClient) {}
 
   getAllProjects(page: number = 1, limit: number = 10, status?: string): Observable<ProjectsResponse> {
-    let params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
+    // Filter projects by status if provided
+    let filteredProjects = this.dummyProjects;
     if (status) {
-      params.append('status', status);
+      filteredProjects = this.dummyProjects.filter(project => project.status === status);
     }
 
-    return this.http.get<ProjectsResponse>(`${this.apiUrl}?${params.toString()}`);
+    // Simulate pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
+    const response: ProjectsResponse = {
+      message: 'Projects retrieved successfully',
+      projects: paginatedProjects,
+      pagination: {
+        current: page,
+        total: Math.ceil(filteredProjects.length / limit),
+        count: paginatedProjects.length,
+        totalProjects: filteredProjects.length
+      }
+    };
+
+    return of(response);
   }
 
   getProject(projectId: string): Observable<ProjectResponse> {
-    return this.http.get<ProjectResponse>(`${this.apiUrl}/${projectId}`);
+    const project = this.dummyProjects.find(p => p._id === projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const response: ProjectResponse = {
+      message: 'Project retrieved successfully',
+      project: project,
+      recentTimeEntries: [] // Empty for now, can be expanded later
+    };
+
+    return of(response);
   }
 
   createProject(projectData: CreateProjectData): Observable<ProjectResponse> {
-    return this.http.post<ProjectResponse>(this.apiUrl, projectData);
+    const newProject: Project = {
+      _id: (this.dummyProjects.length + 1).toString(),
+      title: projectData.title,
+      client: projectData.client,
+      description: projectData.description || '',
+      isContract: projectData.isContract || false,
+      hourlyRate: projectData.hourlyRate,
+      currency: projectData.currency || 'USD',
+      status: 'active',
+      startDate: new Date().toISOString().split('T')[0],
+      estimatedHours: projectData.estimatedHours || 0,
+      totalHoursWorked: 0,
+      totalEarnings: 0,
+      userId: 'user1',
+      tags: projectData.tags || [],
+      notes: projectData.notes || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      formattedEarnings: '$0.00',
+      projectDuration: 0
+    };
+
+    this.dummyProjects.push(newProject);
+
+    const response: ProjectResponse = {
+      message: 'Project created successfully',
+      project: newProject
+    };
+
+    return of(response);
   }
 
   updateProject(projectId: string, projectData: Partial<CreateProjectData>): Observable<ProjectResponse> {
-    return this.http.put<ProjectResponse>(`${this.apiUrl}/${projectId}`, projectData);
+    const projectIndex = this.dummyProjects.findIndex(p => p._id === projectId);
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    const updatedProject = {
+      ...this.dummyProjects[projectIndex],
+      ...projectData,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.dummyProjects[projectIndex] = updatedProject;
+
+    const response: ProjectResponse = {
+      message: 'Project updated successfully',
+      project: updatedProject
+    };
+
+    return of(response);
   }
 
   deleteProject(projectId: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/${projectId}`);
+    const projectIndex = this.dummyProjects.findIndex(p => p._id === projectId);
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    this.dummyProjects.splice(projectIndex, 1);
+
+    return of({ message: 'Project deleted successfully' });
   }
 
   completeProject(projectId: string): Observable<ProjectResponse> {
-    return this.http.put<ProjectResponse>(`${this.apiUrl}/${projectId}/complete`, {});
+    const projectIndex = this.dummyProjects.findIndex(p => p._id === projectId);
+    if (projectIndex === -1) {
+      throw new Error('Project not found');
+    }
+
+    const updatedProject = {
+      ...this.dummyProjects[projectIndex],
+      status: 'completed' as const,
+      endDate: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString()
+    };
+
+    this.dummyProjects[projectIndex] = updatedProject;
+
+    const response: ProjectResponse = {
+      message: 'Project completed successfully',
+      project: updatedProject
+    };
+
+    return of(response);
   }
 
   getProjectStats(): Observable<{ message: string; stats: ProjectStats }> {
-    return this.http.get<{ message: string; stats: ProjectStats }>(`${this.apiUrl}/stats`);
+    // Recalculate stats from current dummy data
+    const stats: ProjectStats = {
+      total: this.dummyProjects.length,
+      active: this.dummyProjects.filter(p => p.status === 'active').length,
+      completed: this.dummyProjects.filter(p => p.status === 'completed').length,
+      paused: this.dummyProjects.filter(p => p.status === 'paused').length,
+      totalHours: this.dummyProjects.reduce((sum, p) => sum + p.totalHoursWorked, 0),
+      totalEarnings: this.dummyProjects.reduce((sum, p) => sum + p.totalEarnings, 0)
+    };
+
+    return of({
+      message: 'Project stats retrieved successfully',
+      stats: stats
+    });
   }
 
   // Utility methods
