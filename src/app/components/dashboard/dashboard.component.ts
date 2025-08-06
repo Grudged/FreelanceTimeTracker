@@ -16,13 +16,13 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
       <nav class="navbar">
         <div class="nav-brand">
           <h1>Stack to the Future</h1>
-          <img src="GGLogo.png" alt="GG Logo" class="brand-logo" />
+          <div class="brand-logo" title="GG Logo"></div>
           <span class="tagline">Time Tracker</span>
         </div>
         
         <div class="nav-menu">
-          <a routerLink="/projects" class="nav-link">Projects</a>
-          <a routerLink="/projects/new" class="nav-link btn-outline">New Project</a>
+          <button (click)="showComingSoon('Projects'); $event.preventDefault()" class="nav-link btn-link">Projects</button>
+          <button (click)="showComingSoon('New Project'); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
           
           <app-theme-selector></app-theme-selector>
           
@@ -154,7 +154,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
               <div class="empty-icon">📁</div>
               <h3>No active projects yet</h3>
               <p>Create your first project to start tracking time and managing your freelance work.</p>
-              <button routerLink="/projects/new" class="btn btn-primary">
+              <button (click)="showComingSoon('Create Project')" class="btn btn-primary">
                 Create Your First Project
               </button>
             </div>
@@ -194,9 +194,14 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .brand-logo {
-      height: 32px;
-      width: auto;
-      object-fit: contain;
+      height: 50px;
+      width: 50px;
+      background-image: url('/GGLogo.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      display: inline-block;
+      flex-shrink: 0;
     }
 
     .tagline {
@@ -218,11 +223,19 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
       padding: 0.5rem 1rem;
       border-radius: 6px;
       transition: all 0.3s ease;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
 
     .nav-link:hover {
       color: #a6d4a6;
       background: rgba(74, 124, 74, 0.2);
+    }
+
+    .btn-link {
+      background: none !important;
+      border: none !important;
     }
 
     .btn-outline {
@@ -711,6 +724,10 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  showComingSoon(feature: string): void {
+    alert(`${feature} feature is coming soon!`);
   }
 
   navigateToProject(projectId: string): void {
