@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: __dirname + '/.env' });
 
 // Import models
@@ -17,11 +16,10 @@ const seedTestData = async () => {
     let testUser = await User.findOne({ email: 'test@example.com' });
     if (!testUser) {
       console.log('👤 Creating test user...');
-      const hashedPassword = await bcrypt.hash('password123', 12);
       testUser = await User.create({
         username: 'testuser',
         email: 'test@example.com',
-        password: hashedPassword,
+        password: 'password123',
         firstName: 'Test',
         lastName: 'User'
       });

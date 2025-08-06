@@ -16,6 +16,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
       <nav class="navbar">
         <div class="nav-brand">
           <h1>Stack to the Future</h1>
+          <img src="GGLogo.png" alt="GG Logo" class="brand-logo" />
           <span class="tagline">Time Tracker</span>
         </div>
         
@@ -179,11 +180,23 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
       backdrop-filter: blur(10px);
     }
 
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     .nav-brand h1 {
       margin: 0;
       color: #8eb68e;
       font-size: 1.5rem;
       font-weight: 700;
+    }
+
+    .brand-logo {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
     }
 
     .tagline {
