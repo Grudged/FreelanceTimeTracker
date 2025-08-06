@@ -80,20 +80,18 @@ import { ThemeService, Theme } from '../../services/theme.service';
     }
 
     .theme-dropdown {
-      position: absolute;
-      top: calc(100% + 0.5rem);
-      right: 0;
-      background: var(--color-surface, rgba(0, 0, 0, 0.9));
-      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.2));
+      position: fixed;
+      background: rgba(31, 41, 55, 0.98);
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.3));
       border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(20px);
       min-width: 200px;
       opacity: 0;
       visibility: hidden;
       transform: translateY(-10px);
       transition: all 0.3s ease;
-      z-index: 1000;
+      z-index: 999999;
       overflow: hidden;
     }
 
@@ -158,7 +156,7 @@ import { ThemeService, Theme } from '../../services/theme.service';
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 999;
+      z-index: 99998;
     }
 
     /* Animation for theme changes */
@@ -204,6 +202,19 @@ export class ThemeSelectorComponent implements OnInit {
 
   toggleDropdown(): void {
     this.isOpen = !this.isOpen;
+    
+    if (this.isOpen) {
+      // Position the dropdown relative to the button
+      setTimeout(() => {
+        const button = document.querySelector('.theme-button') as HTMLElement;
+        const dropdown = document.querySelector('.theme-dropdown') as HTMLElement;
+        if (button && dropdown) {
+          const rect = button.getBoundingClientRect();
+          dropdown.style.top = `${rect.bottom + 8}px`;
+          dropdown.style.right = `${window.innerWidth - rect.right}px`;
+        }
+      });
+    }
   }
 
   selectTheme(theme: Theme): void {

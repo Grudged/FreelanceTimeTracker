@@ -5,11 +5,12 @@ import { AuthService, User } from '../../services/auth.service';
 import { ProjectService, Project, ProjectStats } from '../../services/project.service';
 import { TimeEntryService, TimeStats } from '../../services/time-entry.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
+import { ProjectFormComponent } from '../project-form/project-form.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ThemeSelectorComponent],
+  imports: [CommonModule, RouterLink, ThemeSelectorComponent, ProjectFormComponent],
   template: `
     <div class="dashboard-container">
       <!-- Navigation Header -->
@@ -22,7 +23,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
         
         <div class="nav-menu">
           <button (click)="showComingSoon('Projects'); $event.preventDefault()" class="nav-link btn-link">Projects</button>
-          <button (click)="showComingSoon('New Project'); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
+          <button (click)="openProjectForm(); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
           
           <app-theme-selector></app-theme-selector>
           
@@ -154,24 +155,31 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
               <div class="empty-icon">📁</div>
               <h3>No active projects yet</h3>
               <p>Create your first project to start tracking time and managing your freelance work.</p>
-              <button (click)="showComingSoon('Create Project')" class="btn btn-primary">
+              <button (click)="openProjectForm()" class="btn btn-primary">
                 Create Your First Project
               </button>
             </div>
           </ng-template>
         </div>
       </main>
+      
+      <!-- Project Form Modal -->
+      <app-project-form 
+        *ngIf="showProjectForm"
+        (formClosed)="onProjectFormClosed()"
+        (projectCreated)="onProjectCreated($event)"
+      ></app-project-form>
     </div>
   `,
   styles: [`
     .dashboard-container {
       min-height: 100vh;
-      background: linear-gradient(135deg, #1a2e1a 0%, #2d3b2d 50%, #3d4f3d 100%);
+      background: var(--color-background, linear-gradient(135deg, #1a2e1a 0%, #2d3b2d 50%, #3d4f3d 100%));
     }
 
     .navbar {
-      background: linear-gradient(145deg, rgba(61, 79, 61, 0.9) 0%, rgba(45, 62, 45, 0.9) 100%);
-      border-bottom: 1px solid rgba(74, 124, 74, 0.3);
+      background: var(--color-surface, linear-gradient(145deg, rgba(61, 79, 61, 0.9) 0%, rgba(45, 62, 45, 0.9) 100%));
+      border-bottom: 1px solid var(--color-border, rgba(74, 124, 74, 0.3));
       padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
@@ -188,7 +196,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
 
     .nav-brand h1 {
       margin: 0;
-      color: #8eb68e;
+      color: var(--color-accent, #8eb68e);
       font-size: 1.5rem;
       font-weight: 700;
     }
@@ -205,7 +213,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .tagline {
-      color: #666;
+      color: var(--color-text-muted, #666);
       font-size: 0.875rem;
       font-weight: 400;
     }
@@ -217,7 +225,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .nav-link {
-      color: #666;
+      color: var(--color-text-muted, #666);
       text-decoration: none;
       font-weight: 500;
       padding: 0.5rem 1rem;
@@ -229,8 +237,8 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .nav-link:hover {
-      color: #a6d4a6;
-      background: rgba(74, 124, 74, 0.2);
+      color: var(--color-accent-hover, #a6d4a6);
+      background: var(--color-border-light, rgba(74, 124, 74, 0.2));
     }
 
     .btn-link {
@@ -239,13 +247,13 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
     }
 
     .btn-outline {
-      border: 2px solid #4a7c4a;
-      color: #4a7c4a;
+      border: 2px solid var(--color-primary-light, #4a7c4a);
+      color: var(--color-primary-light, #4a7c4a);
     }
 
     .btn-outline:hover {
-      background: #4a7c4a;
-      color: #f0fff0;
+      background: var(--color-primary-light, #4a7c4a);
+      color: var(--color-text-primary, #f0fff0);
     }
 
     .profile-dropdown {
@@ -658,6 +666,7 @@ import { ThemeSelectorComponent } from '../theme-selector/theme-selector.compone
 export class DashboardComponent implements OnInit {
   currentUser: User | null = null;
   showProfileMenu = false;
+  showProjectForm = false;
   projectStats: ProjectStats | null = null;
   weeklyStats: TimeStats | null = null;
   recentProjects: Project[] = [];
@@ -728,6 +737,20 @@ export class DashboardComponent implements OnInit {
 
   showComingSoon(feature: string): void {
     alert(`${feature} feature is coming soon!`);
+  }
+
+  openProjectForm(): void {
+    this.showProjectForm = true;
+  }
+
+  onProjectFormClosed(): void {
+    this.showProjectForm = false;
+  }
+
+  onProjectCreated(project: any): void {
+    console.log('New project created:', project);
+    // Refresh the projects list
+    this.loadDashboardData();
   }
 
   navigateToProject(projectId: string): void {
