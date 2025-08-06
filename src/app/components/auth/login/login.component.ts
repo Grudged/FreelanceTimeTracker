@@ -61,6 +61,18 @@ import { AuthService, LoginCredentials } from '../../../services/auth.service';
           </button>
         </form>
 
+        <div class="test-user-info">
+          <div class="info-header">
+            <i class="info-icon">ℹ️</i>
+            <span>Test User Information</span>
+          </div>
+          <div class="test-credentials">
+            <p><strong>Username:</strong> testuser</p>
+            <p><strong>Password:</strong> password123</p>
+          </div>
+          <p class="info-note">Use these credentials to test the application</p>
+        </div>
+
         <div class="auth-footer">
           <p>
             Don't have an account?
@@ -232,6 +244,52 @@ import { AuthService, LoginCredentials } from '../../../services/auth.service';
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    .test-user-info {
+      background: linear-gradient(135deg, rgba(74, 124, 74, 0.2) 0%, rgba(45, 91, 45, 0.3) 100%);
+      border: 1px solid rgba(74, 124, 74, 0.4);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(5px);
+    }
+
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      color: #e8f5e8;
+      font-size: 0.9rem;
+    }
+
+    .info-icon {
+      font-size: 1rem;
+    }
+
+    .test-credentials {
+      margin-bottom: 0.5rem;
+    }
+
+    .test-credentials p {
+      margin: 0.25rem 0;
+      color: #d0f0d0;
+      font-size: 0.85rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .test-credentials strong {
+      color: #8eb68e;
+      font-weight: 600;
+    }
+
+    .info-note {
+      margin: 0;
+      color: #a0c0a0;
+      font-size: 0.8rem;
+      font-style: italic;
     }
 
     .auth-footer {

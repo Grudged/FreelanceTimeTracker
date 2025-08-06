@@ -50,13 +50,7 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
             <h2>Welcome back, {{ currentUser?.firstName || currentUser?.username }}!</h2>
             <p class="dashboard-subtitle">Here's what's happening with your projects today.</p>
           </div>
-          <button 
-            routerLink="/projects/new" 
-            class="btn btn-primary"
-          >
-            <span class="icon">+</span>
-            New Project
-          </button>
+          <!---<button (click)="openProjectForm(); $event.preventDefault()" class="btn btn-primary">New Project</button>--->
         </div>
 
         <!-- Stats Cards -->
