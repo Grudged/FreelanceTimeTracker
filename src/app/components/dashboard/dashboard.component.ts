@@ -903,13 +903,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   startTimer(projectId: string, projectTitle: string): void {
-    const success = this.timerService.startTimer(projectId, projectTitle);
+    // Find the project to get detailed info
+    const project = this.recentProjects.find(p => p._id === projectId);
+    const success = this.timerService.startTimer(projectId, projectTitle, project);
+    
     if (success) {
       // Refresh dashboard data after starting timer
       this.loadDashboardData();
+      const hourlyRate = project?.hourlyRate || 75;
       this.toastService.success(
         'Timer started! ⏱️',
-        `Now tracking time for "${projectTitle}"`,
+        `Now tracking "${projectTitle}" at $${hourlyRate}/hr`,
         3000
       );
     }

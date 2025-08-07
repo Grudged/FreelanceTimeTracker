@@ -13,7 +13,9 @@ import { ToastService } from '../../services/toast.service';
       <div class="timer-header" (click)="toggleMinimized()">
         <div class="timer-info">
           <div class="project-title">{{ activeTimer.projectTitle }}</div>
+          <div class="project-client">{{ activeTimer.projectClient }}</div>
           <div class="timer-duration">{{ activeTimer.duration }}</div>
+          <div class="timer-earnings" *ngIf="!isMinimized">\${{ activeTimer.estimatedEarnings.toFixed(2) }}</div>
         </div>
         <div class="timer-controls">
           <button class="minimize-btn" [title]="isMinimized ? 'Expand' : 'Minimize'">
@@ -23,12 +25,34 @@ import { ToastService } from '../../services/toast.service';
       </div>
       
       <div class="timer-body" *ngIf="!isMinimized">
+        <div class="timer-stats">
+          <div class="stat-item">
+            <span class="stat-label">Rate</span>
+            <span class="stat-value">\${{ activeTimer.hourlyRate }}/hr</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Hours</span>
+            <span class="stat-value">{{ activeTimer.hoursWorked.toFixed(2) }}h</span>
+          </div>
+          <div class="stat-item" *ngIf="activeTimer.sessionBreaks > 0">
+            <span class="stat-label">Breaks</span>
+            <span class="stat-value">{{ activeTimer.sessionBreaks }}</span>
+          </div>
+        </div>
+
         <div class="timer-status">
           <span class="status-indicator"></span>
           <span class="status-text">Recording time</span>
+          <div class="auto-tags" *ngIf="activeTimer.tags?.length > 0">
+            <span class="tag" *ngFor="let tag of activeTimer.tags">{{ tag }}</span>
+          </div>
         </div>
         
         <div class="timer-actions">
+          <button (click)="addBreak()" class="break-btn" title="Log a break">
+            <span class="btn-icon">☕</span>
+            Break
+          </button>
           <button (click)="stopTimer()" class="stop-btn">
             <span class="btn-icon">⏹️</span>
             Stop Timer
@@ -99,12 +123,57 @@ import { ToastService } from '../../services/toast.service';
       margin-bottom: 0.25rem;
     }
 
+    .project-client {
+      color: #a0c0a0;
+      font-size: 0.75rem;
+      font-weight: 400;
+      margin-bottom: 0.25rem;
+      opacity: 0.8;
+    }
+
     .timer-duration {
       color: #8eb68e;
       font-size: 1.2rem;
       font-weight: 700;
       font-family: 'Courier New', monospace;
       animation: pulse 2s infinite;
+    }
+
+    .timer-earnings {
+      color: #ffd700;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+
+    .timer-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .stat-label {
+      color: #a0c0a0;
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      color: #e8f5e8;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
 
     @keyframes pulse {
@@ -179,25 +248,68 @@ import { ToastService } from '../../services/toast.service';
       font-weight: 500;
     }
 
+    .auto-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag {
+      background: rgba(142, 182, 142, 0.2);
+      color: #8eb68e;
+      font-size: 0.6rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
     .timer-actions {
       display: flex;
+      gap: 0.5rem;
       justify-content: center;
+    }
+
+    .break-btn {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+      font-size: 0.75rem;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .break-btn:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
     }
 
     .stop-btn {
       background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
       color: white;
       border: none;
-      border-radius: 8px;
-      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.25rem;
       transition: all 0.3s ease;
       box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-      width: 100%;
+      animation: pulse 2s infinite;
+      font-size: 0.75rem;
+      flex: 2;
       justify-content: center;
     }
 
@@ -275,6 +387,15 @@ export class PersistentTimerComponent implements OnInit, OnDestroy {
 
   toggleMinimized(): void {
     this.isMinimized = !this.isMinimized;
+  }
+
+  addBreak(): void {
+    this.timerService.addBreak();
+    this.toastService.info(
+      'Break logged ☕',
+      'Short break added to your work session',
+      2000
+    );
   }
 
   async stopTimer(): Promise<void> {

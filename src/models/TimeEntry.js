@@ -60,23 +60,7 @@ timeEntrySchema.pre('save', function(next) {
   next();
 });
 
-// Update project totals after save
-timeEntrySchema.post('save', async function() {
-  const Project = mongoose.model('Project');
-  const project = await Project.findById(this.projectId);
-  if (project) {
-    await project.updateTotals();
-  }
-});
-
-// Update project totals after delete
-timeEntrySchema.post('deleteOne', { document: true, query: false }, async function() {
-  const Project = mongoose.model('Project');
-  const project = await Project.findById(this.projectId);
-  if (project) {
-    await project.updateTotals();
-  }
-});
+// Note: Project totals will be updated in the controller to avoid circular dependency issues
 
 // Virtual for formatted duration
 timeEntrySchema.virtual('formattedDuration').get(function() {

@@ -1,4 +1,5 @@
 const { TimeEntry, Project } = require('../models');
+const mongoose = require('mongoose');
 
 class TimeEntryController {
   // Get all time entries for a project
@@ -93,6 +94,9 @@ class TimeEntryController {
   // Create a new time entry
   static async createTimeEntry(req, res) {
     try {
+      console.log('Creating time entry with request body:', req.body);
+      console.log('User ID:', req.user._id);
+      
       const {
         projectId,
         startTime,
@@ -105,37 +109,63 @@ class TimeEntryController {
 
       // Validation
       if (!projectId || !startTime || !endTime) {
+        console.log('Validation failed - missing required fields:', { projectId: !!projectId, startTime: !!startTime, endTime: !!endTime });
         return res.status(400).json({
           error: 'Missing required fields',
           message: 'Project ID, start time, and end time are required'
         });
       }
 
+      // Validate ObjectId format for projectId
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        console.log('Invalid ObjectId format for projectId:', projectId);
+        return res.status(400).json({
+          error: 'Invalid project ID',
+          message: 'Project ID must be a valid ObjectId'
+        });
+      }
+
       // Verify project belongs to user
-      const project = await Project.findOne({
-        _id: projectId,
-        userId: req.user._id
-      });
+      console.log('Looking for project:', projectId, 'for user:', req.user._id);
+      let project;
+      try {
+        project = await Project.findOne({
+          _id: projectId,
+          userId: req.user._id
+        });
+      } catch (dbError) {
+        console.error('Database error while finding project:', dbError);
+        return res.status(500).json({
+          error: 'Database error',
+          message: 'Error looking up project'
+        });
+      }
 
       if (!project) {
+        console.log('Project not found or does not belong to user');
         return res.status(404).json({
           error: 'Project not found',
           message: 'The requested project was not found'
         });
       }
 
+      console.log('Project found:', project.title);
+
       // Validate time entries
       const start = new Date(startTime);
       const end = new Date(endTime);
 
+      console.log('Parsed dates - start:', start, 'end:', end);
+
       if (start >= end) {
+        console.log('Invalid time range - start >= end');
         return res.status(400).json({
           error: 'Invalid time range',
           message: 'End time must be after start time'
         });
       }
 
-      const timeEntry = new TimeEntry({
+      const timeEntryData = {
         projectId,
         userId: req.user._id,
         startTime: start,
@@ -144,12 +174,41 @@ class TimeEntryController {
         workLog,
         date: date ? new Date(date) : new Date(),
         tags: tags || []
-      });
+      };
 
-      await timeEntry.save();
+      console.log('Creating time entry with data:', timeEntryData);
+
+      let timeEntry;
+      try {
+        timeEntry = new TimeEntry(timeEntryData);
+        await timeEntry.save();
+        console.log('Time entry saved successfully');
+      } catch (saveError) {
+        console.error('Error saving time entry:', saveError);
+        return res.status(500).json({
+          error: 'Database save error',
+          message: `Failed to save time entry: ${saveError.message}`,
+          details: saveError
+        });
+      }
+
+      // Update project totals manually
+      try {
+        console.log('Updating project totals...');
+        await project.updateTotals();
+        console.log('Project totals updated successfully');
+      } catch (updateError) {
+        console.error('Error updating project totals:', updateError);
+        // Don't fail the request if project update fails
+      }
 
       // Populate the project data for response
-      await timeEntry.populate('projectId', 'title client hourlyRate currency');
+      try {
+        await timeEntry.populate('projectId', 'title client hourlyRate currency');
+      } catch (populateError) {
+        console.error('Error populating project data:', populateError);
+        // Continue without failing the request
+      }
 
       res.status(201).json({
         message: 'Time entry created successfully',
@@ -216,6 +275,17 @@ class TimeEntryController {
         });
       }
 
+      // Update project totals after update
+      try {
+        const project = await Project.findById(timeEntry.projectId._id);
+        if (project) {
+          await project.updateTotals();
+        }
+      } catch (updateError) {
+        console.error('Error updating project totals after update:', updateError);
+        // Don't fail the request if project update fails
+      }
+
       res.json({
         message: 'Time entry updated successfully',
         timeEntry
@@ -245,6 +315,17 @@ class TimeEntryController {
           error: 'Time entry not found',
           message: 'The requested time entry was not found'
         });
+      }
+
+      // Update project totals after deletion
+      try {
+        const project = await Project.findById(timeEntry.projectId);
+        if (project) {
+          await project.updateTotals();
+        }
+      } catch (updateError) {
+        console.error('Error updating project totals after deletion:', updateError);
+        // Don't fail the request if project update fails
       }
 
       res.json({
