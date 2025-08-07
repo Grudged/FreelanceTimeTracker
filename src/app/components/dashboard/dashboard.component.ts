@@ -22,7 +22,7 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
         </div>
         
         <div class="nav-menu">
-          <button (click)="showComingSoon('Projects'); $event.preventDefault()" class="nav-link btn-link">Projects</button>
+          <a routerLink="/projects" class="nav-link btn-link">Projects</a>
           <button (click)="openProjectForm(); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
           
           <app-theme-selector></app-theme-selector>
@@ -727,10 +727,6 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
-  }
-
-  showComingSoon(feature: string): void {
-    alert(`${feature} feature is coming soon!`);
   }
 
   openProjectForm(): void {
