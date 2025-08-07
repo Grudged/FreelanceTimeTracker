@@ -784,8 +784,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.currentUser = this.authService.currentUser;
-    this.loadDashboardData();
+    // Subscribe to auth state changes
+    this.authService.currentUser$.subscribe({
+      next: (user) => {
+        this.currentUser = user;
+        this.cdr.detectChanges(); // Force change detection when auth state changes
+        if (user) {
+          this.loadDashboardData();
+        } else {
+          this.router.navigate(['/']);
+        }
+      },
+      error: (error) => {
+        console.error('Auth state error:', error);
+      }
+    });
   }
 
   loadDashboardData(): void {
@@ -814,6 +827,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.recentProjects = response.projects;
         this.isLoading = false;
+        // Force Angular to detect changes
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error loading projects:', error);
@@ -918,17 +933,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     console.log(`Timer stopped for project ${projectId}. Duration: ${durationHours.toFixed(2)} hours`);
     
-    // TODO: Here you would typically save the time entry to the backend
-    // this.timeEntryService.createTimeEntry({
-    //   projectId: projectId,
-    //   startTime: timer.startTime,
-    //   endTime: endTime,
-    //   duration: durationHours,
-    //   description: 'Work session'
-    // }).subscribe(...);
-    
-    // For now, just show an alert
-    alert(`Work session completed! Duration: ${this.formatDuration(durationMs)}`);
+    // Create time entry
+    const timeEntryData = {
+      projectId: projectId,
+      startTime: timer.startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      description: 'Work session',
+      workLog: 'Time tracked via dashboard timer'
+    };
+
+    this.timeEntryService.createTimeEntry(timeEntryData).subscribe({
+      next: (response) => {
+        console.log('Time entry created successfully:', response);
+        
+        // Refresh dashboard data to show updated totals
+        this.loadDashboardData();
+        
+        // Show success message
+        alert(`Work session completed! Duration: ${this.formatDuration(durationMs)}\nTime entry saved successfully.`);
+      },
+      error: (error) => {
+        console.error('Error creating time entry:', error);
+        alert(`Work session completed! Duration: ${this.formatDuration(durationMs)}\nError saving time entry: ${error.message || 'Unknown error'}`);
+      }
+    });
   }
 
   getTimerDuration(projectId: string): string {

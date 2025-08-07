@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -195,6 +195,7 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
           </div>
         </div>
 
+        <!-- No Projects Template -->
         <ng-template #noProjects>
           <div class="empty-state">
             <div class="empty-icon">📁</div>
@@ -583,9 +584,9 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
     }
 
     .project-card {
-      background: rgba(74, 124, 74, 0.1);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(74, 124, 74, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.2);
       border-radius: 12px;
       padding: 1.5rem;
       cursor: pointer;
@@ -593,9 +594,9 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
     }
 
     .project-card:hover {
-      background: rgba(74, 124, 74, 0.2);
-      border-color: #4a7c4a;
-      box-shadow: 0 6px 20px rgba(74, 124, 74, 0.3);
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
       transform: translateY(-2px);
     }
 
@@ -850,15 +851,34 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private projectService: ProjectService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     // Register Chart.js components
     Chart.register(...registerables);
   }
 
   ngOnInit(): void {
-    this.currentUser = this.authService.currentUser;
-    this.loadProjects();
+    console.log('ProjectsComponent ngOnInit called');
+    
+    // Subscribe to auth state changes
+    this.authService.currentUser$.subscribe({
+      next: (user) => {
+        console.log('Auth state changed, user:', user);
+        this.currentUser = user;
+        this.cdr.detectChanges(); // Force change detection when auth state changes
+        if (user && this.allProjects.length === 0) {
+          console.log('User authenticated and no projects loaded yet, loading projects...');
+          this.loadProjects();
+        } else if (!user) {
+          console.log('No user authenticated, redirecting to login...');
+          this.router.navigate(['/']);
+        }
+      },
+      error: (error) => {
+        console.error('Auth state error:', error);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -866,15 +886,31 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadProjects(): void {
-    this.projectService.getAllProjects().subscribe({
+    console.log('loadProjects called, current isLoading:', this.isLoading);
+    this.projectService.getAllProjects(1, 1000).subscribe({
       next: (response) => {
+        console.log('Projects loaded from API:', response);
+        console.log('Number of projects received:', response.projects.length);
+        console.log('Projects array:', response.projects);
         this.allProjects = response.projects;
+        console.log('allProjects set to:', this.allProjects.length);
         this.filteredProjects = [...this.allProjects];
+        console.log('filteredProjects set to:', this.filteredProjects.length);
         this.extractUniqueClients();
         this.applyFilters();
+        console.log('After applyFilters, filteredProjects:', this.filteredProjects.length);
         this.isLoading = false;
+        console.log('isLoading set to false');
+        
+        // Force Angular to detect changes
+        this.cdr.detectChanges();
+        console.log('Change detection triggered');
+        
         // Initialize charts after data is loaded
-        setTimeout(() => this.initializeCharts(), 100);
+        setTimeout(() => {
+          console.log('Initializing charts...');
+          this.initializeCharts();
+        }, 100);
       },
       error: (error) => {
         console.error('Error loading projects:', error);

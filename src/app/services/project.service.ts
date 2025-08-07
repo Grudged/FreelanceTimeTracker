@@ -214,77 +214,20 @@ export class ProjectService {
   constructor(private http: HttpClient) {}
 
   getAllProjects(page: number = 1, limit: number = 10, status?: string): Observable<ProjectsResponse> {
-    // Filter projects by status if provided
-    let filteredProjects = this.dummyProjects;
+    let url = `${this.apiUrl}?page=${page}&limit=${limit}`;
     if (status) {
-      filteredProjects = this.dummyProjects.filter(project => project.status === status);
+      url += `&status=${status}`;
     }
-
-    // Simulate pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
-
-    const response: ProjectsResponse = {
-      message: 'Projects retrieved successfully',
-      projects: paginatedProjects,
-      pagination: {
-        current: page,
-        total: Math.ceil(filteredProjects.length / limit),
-        count: paginatedProjects.length,
-        totalProjects: filteredProjects.length
-      }
-    };
-
-    return of(response);
+    console.log('Making API call to:', url);
+    return this.http.get<ProjectsResponse>(url);
   }
 
   getProject(projectId: string): Observable<ProjectResponse> {
-    const project = this.dummyProjects.find(p => p._id === projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
-    const response: ProjectResponse = {
-      message: 'Project retrieved successfully',
-      project: project,
-      recentTimeEntries: [] // Empty for now, can be expanded later
-    };
-
-    return of(response);
+    return this.http.get<ProjectResponse>(`${this.apiUrl}/${projectId}`);
   }
 
   createProject(projectData: CreateProjectData): Observable<ProjectResponse> {
-    const newProject: Project = {
-      _id: (this.dummyProjects.length + 1).toString(),
-      title: projectData.title,
-      client: projectData.client,
-      description: projectData.description || '',
-      isContract: projectData.isContract || false,
-      hourlyRate: projectData.hourlyRate,
-      currency: projectData.currency || 'USD',
-      status: 'active',
-      startDate: new Date().toISOString().split('T')[0],
-      estimatedHours: projectData.estimatedHours || 0,
-      totalHoursWorked: 0,
-      totalEarnings: 0,
-      userId: 'user1',
-      tags: projectData.tags || [],
-      notes: projectData.notes || '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      formattedEarnings: '$0.00',
-      projectDuration: 0
-    };
-
-    this.dummyProjects.push(newProject);
-
-    const response: ProjectResponse = {
-      message: 'Project created successfully',
-      project: newProject
-    };
-
-    return of(response);
+    return this.http.post<ProjectResponse>(this.apiUrl, projectData);
   }
 
   updateProject(projectId: string, projectData: Partial<CreateProjectData>): Observable<ProjectResponse> {

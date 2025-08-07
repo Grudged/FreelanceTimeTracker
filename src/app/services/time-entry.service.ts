@@ -223,34 +223,7 @@ export class TimeEntryService {
   }
 
   createTimeEntry(timeEntryData: CreateTimeEntryData): Observable<TimeEntryResponse> {
-    const hoursWorked = this.calculateHours(timeEntryData.startTime, timeEntryData.endTime);
-    
-    const newTimeEntry: TimeEntry = {
-      _id: (this.dummyTimeEntries.length + 1).toString(),
-      projectId: timeEntryData.projectId,
-      userId: 'user1',
-      startTime: timeEntryData.startTime,
-      endTime: timeEntryData.endTime,
-      hoursWorked: hoursWorked,
-      description: timeEntryData.description || '',
-      workLog: timeEntryData.workLog || '',
-      date: timeEntryData.date || new Date().toISOString().split('T')[0],
-      isBreakTime: false,
-      tags: timeEntryData.tags || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      formattedDuration: this.formatDuration(hoursWorked),
-      earnings: hoursWorked * 75 // Assuming $75/hour default rate
-    };
-
-    this.dummyTimeEntries.push(newTimeEntry);
-
-    const response: TimeEntryResponse = {
-      message: 'Time entry created successfully',
-      timeEntry: newTimeEntry
-    };
-
-    return of(response);
+    return this.http.post<TimeEntryResponse>(this.apiUrl, timeEntryData);
   }
 
   updateTimeEntry(timeEntryId: string, timeEntryData: Partial<CreateTimeEntryData>): Observable<TimeEntryResponse> {
