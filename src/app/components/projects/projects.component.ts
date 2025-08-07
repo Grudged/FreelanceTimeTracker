@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { ProjectService, Project } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 import { ProjectFormComponent } from '../project-form/project-form.component';
+import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-projects',
@@ -117,6 +118,20 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
         <!-- Results Summary -->
         <div class="results-summary">
           <p>Showing {{ filteredProjects.length }} of {{ allProjects.length }} projects</p>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section" *ngIf="filteredProjects.length > 0">
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3>Earnings by Project</h3>
+              <canvas #earningsChart></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Projects by Status</h3>
+              <canvas #statusChart></canvas>
+            </div>
+          </div>
         </div>
 
         <!-- Projects Grid -->
@@ -490,6 +505,39 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
       font-size: 0.875rem;
     }
 
+    .charts-section {
+      margin-bottom: 2rem;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-container {
+      background: rgba(74, 124, 74, 0.15);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(74, 124, 74, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .chart-container h3 {
+      margin: 0 0 1rem 0;
+      color: #e8f5e8;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .chart-container canvas {
+      max-height: 300px;
+      width: 100% !important;
+    }
+
     .btn {
       padding: 0.75rem 1.5rem;
       border: none;
@@ -754,6 +802,15 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
         grid-template-columns: 1fr;
       }
 
+      .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .chart-container {
+        padding: 1rem;
+      }
+
       .project-stats {
         grid-template-columns: 1fr;
         gap: 0.5rem;
@@ -766,7 +823,10 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
     }
   `]
 })
-export class ProjectsComponent implements OnInit {
+export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('earningsChart', { static: false }) earningsChart!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('statusChart', { static: false }) statusChart!: ElementRef<HTMLCanvasElement>;
+  
   currentUser: any = null;
   showProfileMenu = false;
   showProjectForm = false;
@@ -774,6 +834,10 @@ export class ProjectsComponent implements OnInit {
   filteredProjects: Project[] = [];
   uniqueClients: string[] = [];
   isLoading = true;
+  
+  // Chart instances
+  earningsChartInstance: Chart | null = null;
+  statusChartInstance: Chart | null = null;
 
   filters = {
     status: '',
@@ -787,11 +851,18 @@ export class ProjectsComponent implements OnInit {
     private authService: AuthService,
     private projectService: ProjectService,
     private router: Router
-  ) {}
+  ) {
+    // Register Chart.js components
+    Chart.register(...registerables);
+  }
 
   ngOnInit(): void {
     this.currentUser = this.authService.currentUser;
     this.loadProjects();
+  }
+
+  ngAfterViewInit(): void {
+    // Charts will be initialized after projects are loaded
   }
 
   loadProjects(): void {
@@ -802,6 +873,8 @@ export class ProjectsComponent implements OnInit {
         this.extractUniqueClients();
         this.applyFilters();
         this.isLoading = false;
+        // Initialize charts after data is loaded
+        setTimeout(() => this.initializeCharts(), 100);
       },
       error: (error) => {
         console.error('Error loading projects:', error);
@@ -858,6 +931,8 @@ export class ProjectsComponent implements OnInit {
     });
 
     this.filteredProjects = filtered;
+    // Update charts when filters change
+    this.updateCharts();
   }
 
   clearFilters(): void {
@@ -941,5 +1016,204 @@ export class ProjectsComponent implements OnInit {
       day: 'numeric',
       year: 'numeric'
     });
+  }
+
+  // Chart methods
+  initializeCharts(): void {
+    if (this.earningsChart && this.statusChart) {
+      this.createEarningsChart();
+      this.createStatusChart();
+    }
+  }
+
+  updateCharts(): void {
+    if (this.earningsChartInstance) {
+      this.updateEarningsChart();
+    }
+    if (this.statusChartInstance) {
+      this.updateStatusChart();
+    }
+  }
+
+  createEarningsChart(): void {
+    const ctx = this.earningsChart.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const earningsData = this.getEarningsChartData();
+
+    this.earningsChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: earningsData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(45, 62, 45, 0.9)',
+            titleColor: '#e8f5e8',
+            bodyColor: '#e8f5e8',
+            borderColor: 'rgba(74, 124, 74, 0.8)',
+            borderWidth: 1,
+            callbacks: {
+              label: (context) => {
+                return `Earnings: $${context.parsed.y.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#a0c0a0',
+              callback: (value) => '$' + value
+            },
+            grid: {
+              color: 'rgba(74, 124, 74, 0.3)'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#a0c0a0',
+              maxRotation: 45
+            },
+            grid: {
+              color: 'rgba(74, 124, 74, 0.3)'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  createStatusChart(): void {
+    const ctx = this.statusChart.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const statusData = this.getStatusChartData();
+
+    this.statusChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: statusData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e8f5e8',
+              padding: 20,
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(45, 62, 45, 0.9)',
+            titleColor: '#e8f5e8',
+            bodyColor: '#e8f5e8',
+            borderColor: 'rgba(74, 124, 74, 0.8)',
+            borderWidth: 1
+          }
+        }
+      }
+    });
+  }
+
+  updateEarningsChart(): void {
+    if (!this.earningsChartInstance) return;
+    
+    const earningsData = this.getEarningsChartData();
+    this.earningsChartInstance.data = earningsData;
+    this.earningsChartInstance.update();
+  }
+
+  updateStatusChart(): void {
+    if (!this.statusChartInstance) return;
+    
+    const statusData = this.getStatusChartData();
+    this.statusChartInstance.data = statusData;
+    this.statusChartInstance.update();
+  }
+
+  getEarningsChartData(): any {
+    // Get top 10 projects by earnings from filtered projects
+    const topProjects = [...this.filteredProjects]
+      .sort((a, b) => b.totalEarnings - a.totalEarnings)
+      .slice(0, 10);
+
+    return {
+      labels: topProjects.map(project => project.title.length > 15 
+        ? project.title.substring(0, 15) + '...' 
+        : project.title),
+      datasets: [{
+        label: 'Earnings',
+        data: topProjects.map(project => project.totalEarnings),
+        backgroundColor: [
+          'rgba(45, 91, 45, 0.8)',
+          'rgba(74, 124, 74, 0.8)',
+          'rgba(102, 126, 234, 0.8)',
+          'rgba(40, 167, 69, 0.8)',
+          'rgba(32, 201, 151, 0.8)',
+          'rgba(255, 193, 7, 0.8)',
+          'rgba(220, 53, 69, 0.8)',
+          'rgba(108, 117, 125, 0.8)',
+          'rgba(23, 162, 184, 0.8)',
+          'rgba(111, 66, 193, 0.8)'
+        ],
+        borderColor: [
+          'rgba(45, 91, 45, 1)',
+          'rgba(74, 124, 74, 1)',
+          'rgba(102, 126, 234, 1)',
+          'rgba(40, 167, 69, 1)',
+          'rgba(32, 201, 151, 1)',
+          'rgba(255, 193, 7, 1)',
+          'rgba(220, 53, 69, 1)',
+          'rgba(108, 117, 125, 1)',
+          'rgba(23, 162, 184, 1)',
+          'rgba(111, 66, 193, 1)'
+        ],
+        borderWidth: 2
+      }]
+    };
+  }
+
+  getStatusChartData(): any {
+    const statusCounts = this.filteredProjects.reduce((acc, project) => {
+      acc[project.status] = (acc[project.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const labels = Object.keys(statusCounts);
+    const data = Object.values(statusCounts);
+
+    const colors = {
+      'active': 'rgba(40, 167, 69, 0.8)',
+      'completed': 'rgba(102, 126, 234, 0.8)',
+      'paused': 'rgba(255, 193, 7, 0.8)',
+      'cancelled': 'rgba(220, 53, 69, 0.8)'
+    };
+
+    return {
+      labels: labels.map(label => label.charAt(0).toUpperCase() + label.slice(1)),
+      datasets: [{
+        data: data,
+        backgroundColor: labels.map(label => colors[label as keyof typeof colors] || 'rgba(108, 117, 125, 0.8)'),
+        borderColor: labels.map(label => colors[label as keyof typeof colors]?.replace('0.8', '1') || 'rgba(108, 117, 125, 1)'),
+        borderWidth: 2
+      }]
+    };
+  }
+
+  ngOnDestroy(): void {
+    // Clean up chart instances
+    if (this.earningsChartInstance) {
+      this.earningsChartInstance.destroy();
+    }
+    if (this.statusChartInstance) {
+      this.statusChartInstance.destroy();
+    }
   }
 }
