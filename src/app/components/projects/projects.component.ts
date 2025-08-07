@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ProjectService, Project } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { TimerService } from '../../services/timer.service';
+import { ToastService } from '../../services/toast.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
@@ -948,6 +949,7 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private projectService: ProjectService,
     private timerService: TimerService,
+    private toastService: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
@@ -1351,6 +1353,11 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log(`Timer started for project: ${projectTitle}`);
       // Force change detection to update UI
       this.cdr.detectChanges();
+      this.toastService.success(
+        'Timer started! ⏱️',
+        `Now tracking time for "${projectTitle}"`,
+        3000
+      );
     }
   }
 
@@ -1360,10 +1367,18 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
       if (result && result.success) {
         // Refresh projects data to show updated totals
         this.loadProjects();
-        alert(`Work session completed! Duration: ${result.duration}\nTime entry saved successfully.`);
+        this.toastService.success(
+          'Work session completed! 🎉',
+          `Duration: ${result.duration} • Time entry saved successfully`,
+          5000
+        );
       }
     } catch (error: any) {
-      alert(`Work session completed! Duration: ${error.duration}\nError saving time entry: ${error.error}`);
+      this.toastService.error(
+        'Work session completed',
+        `Duration: ${error.duration} • Error saving: ${error.error}`,
+        7000
+      );
     }
   }
 

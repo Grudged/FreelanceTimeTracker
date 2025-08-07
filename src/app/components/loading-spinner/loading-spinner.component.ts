@@ -1,0 +1,145 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-loading-spinner',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="loading-container" [class.fullscreen]="fullscreen">
+      <div class="loading-content">
+        <div class="spinner" [class]="'spinner-' + size">
+          <div class="spinner-circle"></div>
+          <div class="spinner-circle"></div>
+          <div class="spinner-circle"></div>
+        </div>
+        <div class="loading-text" *ngIf="text">{{ text }}</div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .loading-container.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+    }
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spinner {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .spinner-small {
+      gap: 0.125rem;
+    }
+
+    .spinner-large {
+      gap: 0.375rem;
+    }
+
+    .spinner-circle {
+      border-radius: 50%;
+      background: var(--color-accent, #3b82f6);
+      animation: bounce 1.4s ease-in-out infinite both;
+    }
+
+    .spinner-small .spinner-circle {
+      width: 0.5rem;
+      height: 0.5rem;
+    }
+
+    .spinner-medium .spinner-circle {
+      width: 0.75rem;
+      height: 0.75rem;
+    }
+
+    .spinner-large .spinner-circle {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .spinner-circle:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .spinner-circle:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    .loading-text {
+      color: var(--color-text-primary, #f0fff0);
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-align: center;
+      opacity: 0.9;
+    }
+
+    .fullscreen .loading-text {
+      color: var(--color-text-primary, #f0fff0);
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Alternative pulse animation */
+    .spinner.pulse .spinner-circle {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .spinner.pulse .spinner-circle:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .spinner.pulse .spinner-circle:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .spinner.pulse .spinner-circle:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+  `]
+})
+export class LoadingSpinnerComponent {
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
+  @Input() text: string = '';
+  @Input() fullscreen: boolean = false;
+  @Input() animation: 'bounce' | 'pulse' = 'bounce';
+}

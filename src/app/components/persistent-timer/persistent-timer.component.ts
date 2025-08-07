@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { TimerService, ActiveTimer } from '../../services/timer.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-persistent-timer',
@@ -257,6 +258,7 @@ export class PersistentTimerComponent implements OnInit, OnDestroy {
 
   constructor(
     private timerService: TimerService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -279,12 +281,18 @@ export class PersistentTimerComponent implements OnInit, OnDestroy {
     try {
       const result = await this.timerService.stopTimer();
       if (result && result.success) {
-        // Show success message - you might want to use a toast service here
-        alert(`Work session completed! Duration: ${result.duration}\nTime entry saved successfully.`);
+        this.toastService.success(
+          'Work session completed! 🎉',
+          `Duration: ${result.duration} • Time entry saved successfully`,
+          5000
+        );
       }
     } catch (error: any) {
-      // Show error message
-      alert(`Work session completed! Duration: ${error.duration}\nError saving time entry: ${error.error}`);
+      this.toastService.error(
+        'Work session completed',
+        `Duration: ${error.duration} • Error saving: ${error.error}`,
+        7000
+      );
     }
   }
 

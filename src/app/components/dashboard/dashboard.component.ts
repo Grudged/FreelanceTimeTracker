@@ -5,6 +5,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { ProjectService, Project, ProjectStats } from '../../services/project.service';
 import { TimeEntryService, TimeStats } from '../../services/time-entry.service';
 import { TimerService } from '../../services/timer.service';
+import { ToastService } from '../../services/toast.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 
@@ -51,6 +52,11 @@ import { ProjectFormComponent } from '../project-form/project-form.component';
             <h2>Welcome back, {{ currentUser?.firstName || currentUser?.username }}!</h2>
             <p class="dashboard-subtitle">Here's what's happening with your projects today.</p>
           </div>
+          
+          <!-- Test Toast Button (you can remove this later) -->
+          <button (click)="testToast()" class="btn btn-secondary" style="margin-right: 1rem;">
+            Test Toast 🎉
+          </button>
           <!---<button (click)="openProjectForm(); $event.preventDefault()" class="btn btn-primary">New Project</button>--->
         </div>
 
@@ -778,6 +784,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private timeEntryService: TimeEntryService,
     private timerService: TimerService,
+    private toastService: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -900,6 +907,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (success) {
       // Refresh dashboard data after starting timer
       this.loadDashboardData();
+      this.toastService.success(
+        'Timer started! ⏱️',
+        `Now tracking time for "${projectTitle}"`,
+        3000
+      );
     }
   }
 
@@ -909,10 +921,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (result && result.success) {
         // Refresh dashboard data to show updated totals
         this.loadDashboardData();
-        alert(`Work session completed! Duration: ${result.duration}\nTime entry saved successfully.`);
+        this.toastService.success(
+          'Work session completed! 🎉',
+          `Duration: ${result.duration} • Time entry saved successfully`,
+          5000
+        );
       }
     } catch (error: any) {
-      alert(`Work session completed! Duration: ${error.duration}\nError saving time entry: ${error.error}`);
+      this.toastService.error(
+        'Work session completed',
+        `Duration: ${error.duration} • Error saving: ${error.error}`,
+        7000
+      );
     }
   }
 
@@ -922,6 +942,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return timer.duration;
     }
     return '00:00:00';
+  }
+
+  // Test method to see toasts in action (you can remove this later)
+  testToast(): void {
+    this.toastService.success(
+      'Test Toast Success! 🎉',
+      'This is a beautiful themed toast notification that matches your design!',
+      5000
+    );
+    
+    // Show different types after delays for demo
+    setTimeout(() => {
+      this.toastService.info(
+        'Info Toast 💡',
+        'Here\'s some helpful information for you.',
+        4000
+      );
+    }, 1000);
+    
+    setTimeout(() => {
+      this.toastService.warning(
+        'Warning Toast ⚠️',
+        'This is a warning message to grab your attention.',
+        4000
+      );
+    }, 2000);
   }
 
   ngOnDestroy(): void {
