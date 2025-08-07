@@ -12,10 +12,10 @@ import { ToastService } from '../../services/toast.service';
     <div class="persistent-timer" *ngIf="activeTimer" [class.minimized]="isMinimized">
       <div class="timer-header" (click)="toggleMinimized()">
         <div class="timer-info">
-          <div class="project-title">{{ activeTimer.projectTitle }}</div>
-          <div class="project-client">{{ activeTimer.projectClient }}</div>
-          <div class="timer-duration">{{ activeTimer.duration }}</div>
-          <div class="timer-earnings" *ngIf="!isMinimized">\${{ activeTimer.estimatedEarnings.toFixed(2) }}</div>
+          <div class="project-title">{{ activeTimer!.projectTitle }}</div>
+          <div class="project-client">{{ activeTimer!.projectClient }}</div>
+          <div class="timer-duration">{{ activeTimer!.duration }}</div>
+          <div class="timer-earnings" *ngIf="!isMinimized">\${{ activeTimer!.estimatedEarnings.toFixed(2) }}</div>
         </div>
         <div class="timer-controls">
           <button class="minimize-btn" [title]="isMinimized ? 'Expand' : 'Minimize'">
@@ -28,23 +28,23 @@ import { ToastService } from '../../services/toast.service';
         <div class="timer-stats">
           <div class="stat-item">
             <span class="stat-label">Rate</span>
-            <span class="stat-value">\${{ activeTimer.hourlyRate }}/hr</span>
+            <span class="stat-value">\${{ activeTimer!.hourlyRate }}/hr</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Hours</span>
-            <span class="stat-value">{{ activeTimer.hoursWorked.toFixed(2) }}h</span>
+            <span class="stat-value">{{ activeTimer!.hoursWorked.toFixed(2) }}h</span>
           </div>
-          <div class="stat-item" *ngIf="activeTimer.sessionBreaks > 0">
+          <div class="stat-item" *ngIf="activeTimer!.sessionBreaks > 0">
             <span class="stat-label">Breaks</span>
-            <span class="stat-value">{{ activeTimer.sessionBreaks }}</span>
+            <span class="stat-value">{{ activeTimer!.sessionBreaks }}</span>
           </div>
         </div>
 
         <div class="timer-status">
           <span class="status-indicator"></span>
           <span class="status-text">Recording time</span>
-          <div class="auto-tags" *ngIf="activeTimer.tags?.length > 0">
-            <span class="tag" *ngFor="let tag of activeTimer.tags">{{ tag }}</span>
+          <div class="auto-tags" *ngIf="activeTimer!.tags?.length && activeTimer!.tags.length > 0">
+            <span class="tag" *ngFor="let tag of activeTimer!.tags">{{ tag }}</span>
           </div>
         </div>
         
