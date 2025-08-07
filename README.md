@@ -1,60 +1,120 @@
 # Stack to the Future - Freelance Time Tracker (FTT)
 
-A comprehensive time tracking application built for freelancers to manage projects, track time, and monitor earnings.
+A comprehensive full-stack time tracking application built for freelancers to manage projects, track time, and monitor earnings. Features Docker containerization, MongoDB integration, and Zabbix monitoring for production-ready deployment.
 
-## Features
+## ✨ Key Features
 
-### 🎯 Core Features
-- **User Authentication** - Secure registration and login system
-- **Project Management** - Create, update, and track multiple projects
-- **Time Tracking** - Detailed time entry with start/end times and work logs
-- **Earnings Calculation** - Automatic calculation based on hourly rates
-- **Dashboard Analytics** - Visual overview of projects and time statistics
-- **Project Status Management** - Track project progress and completion
+### 🎯 Core Functionality
+- **User Authentication** - JWT-based secure registration and login system
+- **Project Management** - Create, update, and track multiple client projects
+- **Time Tracking** - Detailed time entries with start/end times and work descriptions
+- **Earnings Calculation** - Automatic calculation based on hourly rates per project
+- **Dashboard Analytics** - Visual charts and statistics using Chart.js and ng2-charts
+- **Project Status Management** - Track active, completed, paused, or cancelled projects
+- **Persistent Timer** - Continue timing across browser sessions
 
 ### 📱 Frontend Features
-- Welcome screen with authentication options
-- User profiles with customizable settings
-- Home dashboard with project overview
-- Project tiles with detailed time tracking tables
-- Interactive forms for project and time entry creation
-- Responsive design for desktop and mobile
+- **Modern Angular 20** - Standalone components with latest Angular architecture  
+- **Responsive Design** - Mobile-first design that works on all devices
+- **Theme Support** - Dark/light mode with theme selector component
+- **Interactive Dashboard** - Real-time project overview with visual charts
+- **Toast Notifications** - User feedback system for actions and errors
+- **Loading States** - Spinner components for better UX during API calls
+- **Route Guards** - Protected routes with authentication checks
 
 ### 🔧 Backend Features
-- RESTful API with comprehensive endpoints
-- MongoDB database with optimized schemas
-- JWT-based authentication
-- Input validation and error handling
-- Automatic time calculations and project totals
-- Rate limiting and security middleware
+- **RESTful API** - Comprehensive endpoints for all application functionality
+- **MongoDB Integration** - NoSQL database with Mongoose ODM and optimized schemas
+- **JWT Authentication** - Secure token-based authentication with refresh capability
+- **Input Validation** - Server-side validation and error handling
+- **Security Middleware** - Helmet, CORS, rate limiting, and request size limits
+- **Health Monitoring** - Built-in health check and metrics endpoints
+- **Docker Support** - Full containerization with multi-service orchestration
 
-## Tech Stack
+### 🐳 DevOps & Monitoring
+- **Docker Compose** - Multi-container setup with MongoDB, app, and monitoring
+- **Zabbix Integration** - Complete monitoring stack with PostgreSQL backend
+- **Health Checks** - Application and database health monitoring
+- **Metrics Collection** - Memory usage, response times, and system metrics
+- **Container Networking** - Secure internal communication between services
+- **Volume Persistence** - Data persistence for MongoDB and Zabbix
+
+## 🛠 Tech Stack
 
 ### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web application framework
-- **MongoDB** - NoSQL database with Mongoose ODM
-- **JWT** - JSON Web Tokens for authentication
-- **bcryptjs** - Password hashing
-- **CORS** - Cross-origin resource sharing
-- **Helmet** - Security middleware
+- **Node.js 20** - Latest LTS runtime environment
+- **Express.js 5** - Modern web application framework
+- **MongoDB 7** - NoSQL database with Mongoose ODM
+- **JWT** - JSON Web Tokens for stateless authentication
+- **bcryptjs** - Secure password hashing
+- **Helmet** - Security headers and protection
+- **CORS** - Cross-origin resource sharing configuration
+- **Morgan** - HTTP request logger middleware
+- **dotenv** - Environment variable management
 
 ### Frontend
-- **Angular 20** - Modern web framework
-- **TypeScript** - Type-safe JavaScript
-- **Standalone Components** - Modern Angular architecture
-- **Reactive Forms** - Form validation and handling
-- **RxJS** - Reactive programming
-- **HTTP Client** - API communication
+- **Angular 20** - Latest version with standalone components
+- **TypeScript 5.8** - Strong typing and modern JavaScript features
+- **RxJS** - Reactive programming and async data handling
+- **Chart.js & ng2-charts** - Data visualization and analytics
+- **Angular Forms** - Reactive forms with validation
+- **Angular Router** - Client-side routing with guards
+- **HTTP Interceptors** - Automatic JWT token injection
 
-## Installation & Setup
+### Development & Testing
+- **Jest** - JavaScript testing framework
+- **Karma & Jasmine** - Angular testing utilities
+- **Supertest** - HTTP assertion testing
+- **Prettier** - Code formatting with Angular parser
+- **Nodemon** - Development server with auto-reload
+- **Angular CLI** - Development tooling and build system
+
+### Infrastructure & Monitoring
+- **Docker & Docker Compose** - Containerization and orchestration
+- **MongoDB 7** - Primary application database
+- **PostgreSQL 15** - Zabbix monitoring database
+- **Zabbix 6.4** - Complete monitoring solution with web interface
+- **Nginx** - Web server for Zabbix frontend
+- **Alpine Linux** - Lightweight container base images
+
+## 🚀 Installation & Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB (running locally or MongoDB Atlas)
-- Angular CLI (v20 or higher)
+- **Node.js 20+** - Latest LTS version required for Angular 20
+- **Docker & Docker Compose** - For containerized deployment (recommended)
+- **MongoDB** - Database (included in Docker setup)
+- **Angular CLI 20+** - Frontend development tools
 
-### Backend Setup
+### 🐳 Quick Start with Docker (Recommended)
+
+The easiest way to run the complete application with monitoring:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd FreelanceTimeTracker
+
+# Start the complete stack (app + database + monitoring)
+docker-compose up -d
+
+# Access the applications
+# - FreelanceTimeTracker: http://localhost:3000
+# - Frontend development: ng serve (http://localhost:4200)  
+# - Zabbix Monitoring: http://localhost:8080 (Admin/zabbix)
+```
+
+This starts:
+- ✅ FreelanceTimeTracker API server (port 3000)
+- ✅ MongoDB database with initialization
+- ✅ Zabbix monitoring stack (web interface on port 8080)
+- ✅ PostgreSQL for Zabbix data
+- ✅ Health checks and metrics collection
+
+### 📋 Manual Development Setup
+
+For development without Docker:
+
+#### Backend Setup
 
 1. **Clone the repository**
    ```bash
@@ -121,7 +181,49 @@ A comprehensive time tracking application built for freelancers to manage projec
    - Backend API: http://localhost:3000
    - API Documentation: http://localhost:3000/api
 
-## API Endpoints
+## 📊 Monitoring & Health Checks
+
+The application includes comprehensive monitoring capabilities with three built-in endpoints:
+
+### Health Check Endpoint - `/api/health`
+```bash
+curl http://localhost:3000/api/health
+```
+Returns detailed health information:
+- ✅ API status and uptime
+- ✅ Database connectivity status
+- ✅ Response time metrics
+- ✅ Memory usage statistics
+- ✅ System performance metrics
+
+### Detailed Metrics - `/api/metrics`  
+```bash
+curl http://localhost:3000/api/metrics
+```
+Provides comprehensive application metrics:
+- 📈 Database statistics and connection pool
+- 📈 Memory usage (heap used/total)
+- 📈 CPU load averages
+- 📈 Available API endpoints
+- 📈 System resource utilization
+
+### Simple Status - `/api/status`
+```bash
+curl http://localhost:3000/api/status
+```
+Basic uptime status for simple monitoring checks.
+
+### Zabbix Integration
+The Docker setup includes a complete Zabbix monitoring stack:
+- **Zabbix Web Interface**: http://localhost:8080 (Admin/zabbix)
+- **Automatic Host Discovery**: Pre-configured for container monitoring
+- **Health Monitoring**: Tracks API response times and availability
+- **Resource Monitoring**: Memory usage, CPU load, database performance
+- **Alert Configuration**: Ready for email/SMS notifications
+
+See `MONITORING.md` for complete setup instructions.
+
+## 🛠 API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
@@ -180,7 +282,7 @@ Or use any email/password combination when registering - the system will create 
 - **Automatic Calculations**: Hours and earnings calculated automatically
 - **Daily Summaries**: Review work completed each day
 
-## Development
+## 🏗 Project Architecture
 
 ### Project Structure
 ```
@@ -202,44 +304,153 @@ src/
 └── config/                 # Configuration files
 ```
 
-### Running Tests
+### Available Scripts
+
 ```bash
-# Backend tests
-npm test
+# Development
+npm run dev              # Start backend with nodemon
+ng serve                 # Start Angular development server
 
-# Frontend tests
-ng test
+# Testing
+npm test                 # Run Jest tests
+npm run test:watch       # Run tests in watch mode
+ng test                  # Run Angular/Karma tests
 
-# E2E tests
-ng e2e
+# Building
+ng build                 # Build Angular application
+npm run build            # Build for development
+npm run watch            # Build and watch for changes
+
+# Linting
+npm run lint             # Lint code with Angular ESLint
+```
+
+### Docker Development Workflow
+
+```bash
+# Start full development stack
+docker-compose up -d
+
+# View logs
+docker-compose logs -f freelance-app
+docker-compose logs -f mongodb
+
+# Restart after code changes
+docker-compose up --build -d freelance-app
+
+# Run shell in container for debugging
+docker exec -it freelance-app sh
+
+# Clean up
+docker-compose down
+docker-compose down -v  # Remove volumes too
 ```
 
 ### Building for Production
+
+#### Traditional Deployment
 ```bash
-# Build frontend
-ng build --prod
+# Build Angular app
+ng build --configuration production
+
+# Set environment variables
+export NODE_ENV=production
+export MONGODB_URI=your-production-mongodb-uri
+export JWT_SECRET=your-secure-jwt-secret
 
 # Start production server
-NODE_ENV=production npm start
+npm start
 ```
 
-## Contributing
+#### Docker Production Deployment
+```bash
+# Build production image
+docker build -t freelance-time-tracker .
 
+# Run production container
+docker run -d \
+  --name freelance-app \
+  -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e MONGODB_URI=your-mongodb-uri \
+  -e JWT_SECRET=your-jwt-secret \
+  freelance-time-tracker
+```
+
+## 🤝 Contributing
+
+We welcome contributions to the FreelanceTimeTracker project!
+
+### Development Setup
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes following the existing code style
+4. Run tests: `npm test` and `ng test`  
+5. Test with Docker: `docker-compose up --build -d`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
 
-## License
+### Code Standards
+- Use Prettier for code formatting
+- Follow Angular style guide for frontend components
+- Include tests for new functionality
+- Update documentation for API changes
+- Ensure Docker builds succeed
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Application not starting:**
+- Check Node.js version (requires v20+)
+- Verify MongoDB is running: `docker ps | grep mongodb`
+- Check environment variables in `.env` file
+
+**Docker issues:**
+- Clean up containers: `docker-compose down -v`
+- Rebuild images: `docker-compose build --no-cache`
+- Check Docker logs: `docker-compose logs [service-name]`
+
+**Frontend build errors:**
+- Clear Angular cache: `ng cache clean`
+- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
+- Check Angular CLI version: `ng version`
+
+**Database connection errors:**
+- Verify MongoDB URI format in environment variables
+- Check MongoDB authentication credentials
+- Test connection: `curl http://localhost:3000/api/health`
+
+## 📚 Additional Resources
+
+- **Monitoring Guide**: See `MONITORING.md` for complete Zabbix setup
+- **API Documentation**: Available at `http://localhost:3000/api` when running
+- **Docker Compose Reference**: Multi-service configuration with monitoring
+- **Angular 20 Documentation**: [Official Angular Docs](https://angular.io/docs)
+- **MongoDB Best Practices**: [MongoDB Documentation](https://docs.mongodb.com/)
+
+## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+## 🆘 Support & Issues
 
-For support, email your-email@example.com or create an issue in the GitHub repository.
+- **Create an Issue**: [GitHub Issues](https://github.com/your-username/FreelanceTimeTracker/issues)
+- **Documentation**: Check `MONITORING.md` for deployment help
+- **Community**: Star the repo if you find it useful!
 
 ---
 
+## 🏆 Project Highlights
+
+✨ **Modern Stack**: Angular 20 + Node.js 20 + MongoDB 7  
+🐳 **Docker Ready**: Full containerization with monitoring  
+📊 **Production Monitoring**: Zabbix integration with health checks  
+🔐 **Security First**: JWT authentication, CORS, Helmet protection  
+📱 **Responsive Design**: Works on desktop, tablet, and mobile  
+⚡ **Performance Optimized**: Lazy loading, caching, and efficient queries  
+🧪 **Well Tested**: Jest + Karma testing frameworks included  
+
 **Stack to the Future - Freelance Time Tracker**  
-*Empowering freelancers with professional time management tools*
+*Professional time tracking for modern freelancers*
