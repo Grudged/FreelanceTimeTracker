@@ -1,10 +1,11 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './services/theme.service';
+import { PersistentTimerComponent } from './components/persistent-timer/persistent-timer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, PersistentTimerComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

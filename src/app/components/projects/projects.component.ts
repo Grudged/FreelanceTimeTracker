@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProjectService, Project } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
+import { TimerService } from '../../services/timer.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
@@ -191,6 +192,30 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
                 <span class="date-label">Updated:</span>
                 <span class="date-value">{{ formatDate(project.updatedAt) }}</span>
               </div>
+            </div>
+
+            <!-- Timer Controls for Active Projects -->
+            <div class="timer-controls" *ngIf="project.status === 'active'">
+              <button 
+                *ngIf="!isTimerRunning(project._id)"
+                (click)="startTimer(project._id, project.title); $event.stopPropagation()"
+                class="btn-timer btn-start"
+                title="Start timer for {{ project.title }}"
+              >
+                <span class="timer-icon">▶️</span>
+                Start Timer
+              </button>
+              
+              <button 
+                *ngIf="isTimerRunning(project._id)"
+                (click)="stopTimer(project._id); $event.stopPropagation()"
+                class="btn-timer btn-stop"
+                title="Stop timer for {{ project.title }}"
+              >
+                <span class="timer-icon">⏸️</span>
+                Stop Timer
+                <span class="timer-duration">{{ getTimerDuration(project._id) }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -768,6 +793,77 @@ import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
       margin: 0 0.5rem;
     }
 
+    .timer-controls {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-timer {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-start:hover {
+      background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+      animation: pulse 2s infinite;
+    }
+
+    .btn-stop:hover {
+      background: linear-gradient(135deg, #c82333 0%, #e8590c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    .timer-icon {
+      font-size: 1rem;
+    }
+
+    .timer-duration {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      margin-left: 0.25rem;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+      }
+      50% {
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.6);
+      }
+      100% {
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+      }
+    }
+
     @media (max-width: 768px) {
       .navbar {
         padding: 1rem;
@@ -851,6 +947,7 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private projectService: ProjectService,
+    private timerService: TimerService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {
@@ -1241,6 +1338,41 @@ export class ProjectsComponent implements OnInit, AfterViewInit, OnDestroy {
         borderWidth: 2
       }]
     };
+  }
+
+  // Timer methods
+  isTimerRunning(projectId: string): boolean {
+    return this.timerService.isTimerRunning(projectId);
+  }
+
+  startTimer(projectId: string, projectTitle: string): void {
+    const success = this.timerService.startTimer(projectId, projectTitle);
+    if (success) {
+      console.log(`Timer started for project: ${projectTitle}`);
+      // Force change detection to update UI
+      this.cdr.detectChanges();
+    }
+  }
+
+  async stopTimer(projectId: string): Promise<void> {
+    try {
+      const result = await this.timerService.stopTimer();
+      if (result && result.success) {
+        // Refresh projects data to show updated totals
+        this.loadProjects();
+        alert(`Work session completed! Duration: ${result.duration}\nTime entry saved successfully.`);
+      }
+    } catch (error: any) {
+      alert(`Work session completed! Duration: ${error.duration}\nError saving time entry: ${error.error}`);
+    }
+  }
+
+  getTimerDuration(projectId: string): string {
+    const timer = this.timerService.getCurrentTimer();
+    if (timer && timer.projectId === projectId) {
+      return timer.duration;
+    }
+    return '00:00:00';
   }
 
   ngOnDestroy(): void {

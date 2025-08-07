@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { AuthService, User } from '../../services/auth.service';
 import { ProjectService, Project, ProjectStats } from '../../services/project.service';
 import { TimeEntryService, TimeStats } from '../../services/time-entry.service';
+import { TimerService } from '../../services/timer.service';
 import { ThemeSelectorComponent } from '../theme-selector/theme-selector.component';
 import { ProjectFormComponent } from '../project-form/project-form.component';
 
@@ -771,14 +772,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   recentProjects: Project[] = [];
   isLoading = true;
   
-  // Timer properties
-  activeTimers: Map<string, { startTime: Date; intervalId: any }> = new Map();
-  timerDisplay: Map<string, string> = new Map();
 
   constructor(
     private authService: AuthService,
     private projectService: ProjectService,
     private timeEntryService: TimeEntryService,
+    private timerService: TimerService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -893,99 +892,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Timer methods
   isTimerRunning(projectId: string): boolean {
-    return this.activeTimers.has(projectId);
+    return this.timerService.isTimerRunning(projectId);
   }
 
   startTimer(projectId: string, projectTitle: string): void {
-    if (this.activeTimers.has(projectId)) {
-      return; // Timer already running
+    const success = this.timerService.startTimer(projectId, projectTitle);
+    if (success) {
+      // Refresh dashboard data after starting timer
+      this.loadDashboardData();
     }
-
-    const startTime = new Date();
-    const intervalId = setInterval(() => {
-      this.updateTimerDisplay(projectId, startTime);
-    }, 1000);
-
-    this.activeTimers.set(projectId, { startTime, intervalId });
-    this.updateTimerDisplay(projectId, startTime);
-    
-    console.log(`Timer started for project: ${projectTitle}`);
-    // TODO: You might want to save this to the backend or local storage
   }
 
-  stopTimer(projectId: string): void {
-    const timer = this.activeTimers.get(projectId);
-    if (!timer) {
-      return;
-    }
-
-    // Clear the interval
-    clearInterval(timer.intervalId);
-    
-    // Calculate duration
-    const endTime = new Date();
-    const durationMs = endTime.getTime() - timer.startTime.getTime();
-    const durationHours = durationMs / (1000 * 60 * 60); // Convert to hours
-
-    // Remove from active timers
-    this.activeTimers.delete(projectId);
-    this.timerDisplay.delete(projectId);
-
-    console.log(`Timer stopped for project ${projectId}. Duration: ${durationHours.toFixed(2)} hours`);
-    
-    // Create time entry
-    const timeEntryData = {
-      projectId: projectId,
-      startTime: timer.startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      description: 'Work session',
-      workLog: 'Time tracked via dashboard timer'
-    };
-
-    this.timeEntryService.createTimeEntry(timeEntryData).subscribe({
-      next: (response) => {
-        console.log('Time entry created successfully:', response);
-        
+  async stopTimer(projectId: string): Promise<void> {
+    try {
+      const result = await this.timerService.stopTimer();
+      if (result && result.success) {
         // Refresh dashboard data to show updated totals
         this.loadDashboardData();
-        
-        // Show success message
-        alert(`Work session completed! Duration: ${this.formatDuration(durationMs)}\nTime entry saved successfully.`);
-      },
-      error: (error) => {
-        console.error('Error creating time entry:', error);
-        alert(`Work session completed! Duration: ${this.formatDuration(durationMs)}\nError saving time entry: ${error.message || 'Unknown error'}`);
+        alert(`Work session completed! Duration: ${result.duration}\nTime entry saved successfully.`);
       }
-    });
+    } catch (error: any) {
+      alert(`Work session completed! Duration: ${error.duration}\nError saving time entry: ${error.error}`);
+    }
   }
 
   getTimerDuration(projectId: string): string {
-    return this.timerDisplay.get(projectId) || '00:00:00';
-  }
-
-  private updateTimerDisplay(projectId: string, startTime: Date): void {
-    const now = new Date();
-    const durationMs = now.getTime() - startTime.getTime();
-    this.timerDisplay.set(projectId, this.formatDuration(durationMs));
-    // Trigger change detection to update the UI
-    this.cdr.detectChanges();
-  }
-
-  private formatDuration(durationMs: number): string {
-    const totalSeconds = Math.floor(durationMs / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timer = this.timerService.getCurrentTimer();
+    if (timer && timer.projectId === projectId) {
+      return timer.duration;
+    }
+    return '00:00:00';
   }
 
   ngOnDestroy(): void {
-    // Clean up any running timers when component is destroyed
-    this.activeTimers.forEach((timer) => {
-      clearInterval(timer.intervalId);
-    });
-    this.activeTimers.clear();
-    this.timerDisplay.clear();
+    // Timer cleanup is now handled by the TimerService
+    // No need to clean up here since timers persist across components
   }
 }
