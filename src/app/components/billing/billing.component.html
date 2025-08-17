@@ -1,0 +1,404 @@
+<div class="billing-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading billing information...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="billing-content">
+    
+    <!-- Header -->
+    <div class="billing-header">
+      <div class="header-content">
+        <div class="billing-info">
+          <h1>Billing & Subscription</h1>
+          <p>Manage your subscription, payment methods, and billing history</p>
+        </div>
+        <div class="header-actions" *ngIf="isOwner">
+          <button class="btn btn-secondary" (click)="openAddPaymentModal()">
+            <i class="icon-plus"></i> Add Payment Method
+          </button>
+          <button class="btn btn-primary" (click)="openChangePlanModal()">
+            <i class="icon-upgrade"></i> Change Plan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscription Overview -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Current Subscription</h2>
+        <span class="badge" [class]="subscription.status === 'active' ? 'badge-success' : 'badge-warning'">
+          {{ subscription.status | titlecase }}
+        </span>
+      </div>
+      
+      <div class="subscription-details">
+        <div class="subscription-grid">
+          <div class="detail-item">
+            <div class="detail-icon plan-icon"></div>
+            <div class="detail-content">
+              <h4>{{ subscription.plan | titlecase }} Plan</h4>
+              <p>{{ formatCurrency(subscription.nextBillingAmount, subscription.currency) }}/month</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon billing-icon"></div>
+            <div class="detail-content">
+              <h4>Next Billing Date</h4>
+              <p>{{ formatDate(subscription.currentPeriodEnd) }}</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon period-icon"></div>
+            <div class="detail-content">
+              <h4>Current Period</h4>
+              <p>{{ formatDate(subscription.currentPeriodStart) }} - {{ formatDate(subscription.currentPeriodEnd) }}</p>
+            </div>
+          </div>
+          
+          <div class="detail-item">
+            <div class="detail-icon amount-icon"></div>
+            <div class="detail-content">
+              <h4>Next Amount</h4>
+              <p>{{ formatCurrency(subscription.nextBillingAmount, subscription.currency) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Payment Methods</h2>
+        <button *ngIf="isOwner" class="btn btn-secondary btn-small" (click)="openAddPaymentModal()">
+          <i class="icon-plus"></i> Add New
+        </button>
+      </div>
+      
+      <div class="payment-methods">
+        <div *ngFor="let method of paymentMethods" class="payment-method">
+          <div class="payment-icon" [class]="'icon-' + method.brand"></div>
+          
+          <div class="payment-info">
+            <h4>
+              {{ method.brand | titlecase }} 
+              <span class="card-digits">•••• {{ method.last4 }}</span>
+            </h4>
+            <p *ngIf="method.type === 'card'">
+              Expires {{ method.expiryMonth }}/{{ method.expiryYear }}
+            </p>
+            <span *ngIf="method.isDefault" class="default-badge">Default</span>
+          </div>
+          
+          <div class="payment-actions" *ngIf="isOwner">
+            <button 
+              *ngIf="!method.isDefault"
+              class="btn btn-small btn-secondary"
+              (click)="setDefaultPaymentMethod(method)">
+              Make Default
+            </button>
+            <button 
+              class="btn btn-small btn-danger"
+              (click)="removePaymentMethod(method)">
+              Remove
+            </button>
+          </div>
+        </div>
+        
+        <div *ngIf="paymentMethods.length === 0" class="empty-state">
+          <p>No payment methods added yet</p>
+          <button *ngIf="isOwner" class="btn btn-primary" (click)="openAddPaymentModal()">
+            Add First Payment Method
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Metrics -->
+    <div class="section-card" *ngIf="usageMetrics">
+      <div class="section-header">
+        <h2>Usage This Month</h2>
+        <button class="btn btn-secondary btn-small" (click)="openUsageModal()">
+          <i class="icon-chart"></i> View Details
+        </button>
+      </div>
+      
+      <div class="usage-grid">
+        <div class="usage-metric">
+          <div class="metric-icon projects-icon"></div>
+          <div class="metric-content">
+            <h3>{{ usageMetrics.projectsCreated }}</h3>
+            <p>Projects Created</p>
+          </div>
+        </div>
+        
+        <div class="usage-metric">
+          <div class="metric-icon entries-icon"></div>
+          <div class="metric-content">
+            <h3>{{ usageMetrics.timeEntriesLogged }}</h3>
+            <p>Time Entries</p>
+          </div>
+        </div>
+        
+        <div class="usage-metric">
+          <div class="metric-icon team-icon"></div>
+          <div class="metric-content">
+            <h3>{{ usageMetrics.teamMembersActive }}</h3>
+            <p>Active Users</p>
+          </div>
+        </div>
+        
+        <div class="usage-metric">
+          <div class="metric-icon storage-icon"></div>
+          <div class="metric-content">
+            <h3>{{ formatBytes(usageMetrics.storageUsed * 1024 * 1024) }}</h3>
+            <p>Storage Used</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing History -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Billing History</h2>
+        <span class="invoice-count">{{ invoices.length }} invoices</span>
+      </div>
+      
+      <div class="invoices-table">
+        <div class="table-header">
+          <div class="col-invoice">Invoice</div>
+          <div class="col-date">Date</div>
+          <div class="col-amount">Amount</div>
+          <div class="col-status">Status</div>
+          <div class="col-actions">Actions</div>
+        </div>
+        
+        <div *ngFor="let invoice of invoices" class="table-row">
+          <div class="col-invoice">
+            <div class="invoice-info">
+              <strong>{{ invoice.invoiceNumber }}</strong>
+              <p>{{ invoice.description }}</p>
+            </div>
+          </div>
+          
+          <div class="col-date">
+            {{ formatDate(invoice.invoiceDate) }}
+          </div>
+          
+          <div class="col-amount">
+            {{ formatCurrency(invoice.amount, invoice.currency) }}
+          </div>
+          
+          <div class="col-status">
+            <span class="status-badge" [class]="getInvoiceStatusClass(invoice.status)">
+              {{ invoice.status | titlecase }}
+            </span>
+          </div>
+          
+          <div class="col-actions">
+            <button 
+              *ngIf="invoice.downloadUrl"
+              class="btn btn-small btn-secondary"
+              (click)="downloadInvoice(invoice)">
+              <i class="icon-download"></i> Download
+            </button>
+          </div>
+        </div>
+        
+        <div *ngIf="invoices.length === 0" class="table-empty">
+          <p>No invoices found</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Payment Method Modal -->
+  <div *ngIf="showAddPaymentModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add Payment Method</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form (ngSubmit)="addPaymentMethod()" class="modal-form">
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input 
+            type="text" 
+            id="cardNumber"
+            [(ngModel)]="addPaymentForm.cardNumber"
+            name="cardNumber"
+            placeholder="1234 5678 9012 3456"
+            maxlength="19"
+            required>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="expiryMonth">Expiry Month</label>
+            <select 
+              id="expiryMonth"
+              [(ngModel)]="addPaymentForm.expiryMonth"
+              name="expiryMonth"
+              required>
+              <option value="">Month</option>
+              <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="month">
+                {{ month.toString().padStart(2, '0') }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="expiryYear">Expiry Year</label>
+            <select 
+              id="expiryYear"
+              [(ngModel)]="addPaymentForm.expiryYear"
+              name="expiryYear"
+              required>
+              <option value="">Year</option>
+              <option *ngFor="let year of [2024,2025,2026,2027,2028,2029,2030,2031,2032,2033,2034]" [value]="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="cvc">CVC</label>
+            <input 
+              type="text" 
+              id="cvc"
+              [(ngModel)]="addPaymentForm.cvc"
+              name="cvc"
+              placeholder="123"
+              maxlength="4"
+              required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="cardName">Cardholder Name</label>
+          <input 
+            type="text" 
+            id="cardName"
+            [(ngModel)]="addPaymentForm.name"
+            name="cardName"
+            placeholder="John Doe"
+            required>
+        </div>
+        
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input 
+              type="checkbox" 
+              [(ngModel)]="addPaymentForm.makeDefault"
+              name="makeDefault">
+            <span class="checkmark"></span>
+            Make this the default payment method
+          </label>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Payment Method</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Plan Modal -->
+  <div *ngIf="showChangePlanModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Change Subscription Plan</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <div class="plans-grid">
+        <div *ngFor="let plan of planOptions" 
+             class="plan-card"
+             [class.current-plan]="plan.id === subscription.plan"
+             [class.recommended]="plan.recommended">
+          
+          <div class="plan-header">
+            <h4>{{ plan.name }}</h4>
+            <div class="plan-price">
+              <span class="price">${{ plan.price }}</span>
+              <span class="period">/month</span>
+            </div>
+            <span *ngIf="plan.recommended" class="recommended-badge">Recommended</span>
+            <span *ngIf="plan.id === subscription.plan" class="current-badge">Current Plan</span>
+          </div>
+          
+          <div class="plan-features">
+            <ul>
+              <li *ngFor="let feature of plan.features">
+                <i class="icon-check"></i> {{ feature }}
+              </li>
+            </ul>
+          </div>
+          
+          <div class="plan-actions">
+            <button 
+              *ngIf="plan.id !== subscription.plan"
+              class="btn btn-primary"
+              (click)="changePlan(plan.id)">
+              Switch to {{ plan.name }}
+            </button>
+            <span *ngIf="plan.id === subscription.plan" class="current-plan-text">
+              Current Plan
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Details Modal -->
+  <div *ngIf="showUsageModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Usage Details - {{ usageMetrics?.period }}</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <div class="usage-details" *ngIf="usageMetrics">
+        <div class="usage-item">
+          <div class="usage-label">Projects Created</div>
+          <div class="usage-value">{{ usageMetrics.projectsCreated }}</div>
+        </div>
+        
+        <div class="usage-item">
+          <div class="usage-label">Time Entries Logged</div>
+          <div class="usage-value">{{ usageMetrics.timeEntriesLogged }}</div>
+        </div>
+        
+        <div class="usage-item">
+          <div class="usage-label">Reports Generated</div>
+          <div class="usage-value">{{ usageMetrics.reportsGenerated }}</div>
+        </div>
+        
+        <div class="usage-item">
+          <div class="usage-label">Active Team Members</div>
+          <div class="usage-value">{{ usageMetrics.teamMembersActive }}</div>
+        </div>
+        
+        <div class="usage-item">
+          <div class="usage-label">Storage Used</div>
+          <div class="usage-value">{{ formatBytes(usageMetrics.storageUsed * 1024 * 1024) }}</div>
+        </div>
+        
+        <div class="usage-item">
+          <div class="usage-label">API Calls</div>
+          <div class="usage-value">{{ usageMetrics.apiCalls.toLocaleString() }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

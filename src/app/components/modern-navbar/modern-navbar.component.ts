@@ -58,4 +58,20 @@ export class ModernNavbarComponent {
   onLogout(): void {
     this.logout.emit();
   }
+
+  // Role-based navigation helpers
+  isOwnerOrAdmin(): boolean {
+    if (!this.currentUser) return false;
+    // TODO: Check actual user role from organization
+    // For now, assume all logged-in users have access
+    return true;
+  }
+
+  canAccessBilling(): boolean {
+    return this.isOwnerOrAdmin();
+  }
+
+  canAccessOrganization(): boolean {
+    return this.isOwnerOrAdmin();
+  }
 }

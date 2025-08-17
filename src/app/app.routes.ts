@@ -4,12 +4,16 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ProjectsComponent } from './components/projects/projects.component';
+import { OrganizationComponent } from './components/organization/organization.component';
+import { BillingComponent } from './components/billing/billing.component';
+import { PricingComponent } from './components/pricing/pricing.component';
 import { TestComponent } from './components/test/test.component';
 import { authGuard, guestGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'test', component: TestComponent },
   { path: '', component: WelcomeComponent },
+  { path: 'pricing', component: PricingComponent }, // Public pricing page
   { 
     path: 'auth/login', 
     component: LoginComponent,
@@ -29,6 +33,16 @@ export const routes: Routes = [
     path: 'projects',
     component: ProjectsComponent,
     canActivate: [authGuard]
+  },
+  { 
+    path: 'organization',
+    component: OrganizationComponent,
+    canActivate: [authGuard] // TODO: Add admin/owner guard
+  },
+  { 
+    path: 'billing',
+    component: BillingComponent,
+    canActivate: [authGuard] // TODO: Add admin/owner guard
   },
   { path: '**', redirectTo: '' }
 ];

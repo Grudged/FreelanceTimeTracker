@@ -1,0 +1,280 @@
+<div class="organization-container">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading organization details...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && organization" class="organization-content">
+    
+    <!-- Header -->
+    <div class="organization-header">
+      <div class="header-content">
+        <div class="org-info">
+          <h1>{{ organization.name }}</h1>
+          <div class="org-meta">
+            <span class="badge" [class]="getStatusBadgeClass(organization.status)">
+              {{ organization.status | titlecase }}
+            </span>
+            <span class="plan-badge">{{ organization.plan | titlecase }} Plan</span>
+          </div>
+        </div>
+        <div class="header-actions" *ngIf="isAdmin">
+          <button class="btn btn-secondary" (click)="openEditOrgModal()">
+            <i class="icon-edit"></i> Edit Organization
+          </button>
+          <button class="btn btn-primary" (click)="openUpgradeModal()">
+            <i class="icon-upgrade"></i> Manage Plan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Organization Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon users-icon"></div>
+        <div class="stat-content">
+          <h3>{{ organization.currentUsers }}/{{ organization.maxUsers }}</h3>
+          <p>Team Members</p>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getPlanProgress()"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon plan-icon"></div>
+        <div class="stat-content">
+          <h3>{{ organization.plan | titlecase }}</h3>
+          <p>Current Plan</p>
+          <small>${{ planDetails[organization.plan].price }}/month</small>
+        </div>
+      </div>
+      
+      <div class="stat-card" *ngIf="organization.subscription">
+        <div class="stat-icon billing-icon"></div>
+        <div class="stat-content">
+          <h3>{{ formatDate(organization.subscription.currentPeriodEnd) }}</h3>
+          <p>Next Billing</p>
+          <small class="badge" [class]="getStatusBadgeClass(organization.subscription.status)">
+            {{ organization.subscription.status | titlecase }}
+          </small>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon date-icon"></div>
+        <div class="stat-content">
+          <h3>{{ formatDate(organization.createdAt) }}</h3>
+          <p>Created</p>
+          <small>Organization established</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Management Section -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Team Members</h2>
+        <button *ngIf="isAdmin" class="btn btn-primary" (click)="openInviteModal()">
+          <i class="icon-plus"></i> Invite Member
+        </button>
+      </div>
+      
+      <div class="team-list">
+        <div *ngFor="let member of teamMembers" class="team-member">
+          <div class="member-avatar">
+            <span>{{ (member.firstName?.[0] || member.username[0]) | uppercase }}</span>
+          </div>
+          
+          <div class="member-info">
+            <h4>{{ member.firstName && member.lastName ? member.firstName + ' ' + member.lastName : member.username }}</h4>
+            <p>{{ member.email }}</p>
+            <small *ngIf="member.joinedAt">Joined {{ formatDate(member.joinedAt) }}</small>
+          </div>
+          
+          <div class="member-role">
+            <span class="badge" [class]="getRoleBadgeClass(member.role)">
+              {{ member.role | titlecase }}
+            </span>
+          </div>
+          
+          <div class="member-status">
+            <span class="badge" [class]="getStatusBadgeClass(member.status)">
+              {{ member.status | titlecase }}
+            </span>
+          </div>
+          
+          <div class="member-actions" *ngIf="isAdmin && member.role !== 'owner'">
+            <select 
+              [value]="member.role" 
+              (change)="updateMemberRole(member, $any($event.target).value)"
+              class="role-select">
+              <option value="admin">Admin</option>
+              <option value="member">Member</option>
+              <option value="viewer">Viewer</option>
+            </select>
+            
+            <button 
+              class="btn btn-small btn-danger" 
+              (click)="removeMember(member)"
+              title="Remove member">
+              <i class="icon-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Features -->
+    <div class="section-card">
+      <div class="section-header">
+        <h2>Current Plan Features</h2>
+      </div>
+      
+      <div class="features-grid">
+        <div *ngFor="let feature of planDetails[organization.plan].features" class="feature-item">
+          <i class="icon-check feature-check"></i>
+          <span>{{ feature }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Organization Modal -->
+  <div *ngIf="showEditOrgModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Edit Organization</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form (ngSubmit)="saveOrganization()" class="modal-form">
+        <div class="form-group">
+          <label for="orgName">Organization Name</label>
+          <input 
+            type="text" 
+            id="orgName"
+            [(ngModel)]="editOrgForm.name"
+            name="orgName"
+            placeholder="Enter organization name"
+            required>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invite Member Modal -->
+  <div *ngIf="showInviteModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Invite Team Member</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <form (ngSubmit)="sendInvitation()" class="modal-form">
+        <div class="form-group">
+          <label for="inviteEmail">Email Address</label>
+          <input 
+            type="email" 
+            id="inviteEmail"
+            [(ngModel)]="inviteForm.email"
+            name="inviteEmail"
+            placeholder="colleague@company.com"
+            required>
+        </div>
+        
+        <div class="form-group">
+          <label for="inviteRole">Role</label>
+          <select 
+            id="inviteRole"
+            [(ngModel)]="inviteForm.role"
+            name="inviteRole"
+            class="form-select">
+            <option value="viewer">Viewer - Can view projects and reports</option>
+            <option value="member">Member - Can create and manage projects</option>
+            <option value="admin">Admin - Can manage team and settings</option>
+          </select>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send Invitation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Plan Modal -->
+  <div *ngIf="showUpgradeModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Manage Subscription Plan</h3>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+      
+      <div class="plans-grid">
+        <div *ngFor="let plan of ['starter', 'professional', 'enterprise', 'custom']" 
+             class="plan-card"
+             [class.current-plan]="plan === organization?.plan"
+             [class.recommended]="plan === 'professional'">
+          
+          <div class="plan-header">
+            <h4>{{ plan | titlecase }}</h4>
+            <div class="plan-price">
+              <span class="price">${{ planDetails[plan as keyof typeof planDetails].price }}</span>
+              <span class="period" *ngIf="plan !== 'custom'">/month</span>
+            </div>
+            <span *ngIf="plan === 'professional'" class="recommended-badge">Recommended</span>
+            <span *ngIf="plan === organization?.plan" class="current-badge">Current Plan</span>
+          </div>
+          
+          <div class="plan-features">
+            <div class="user-limit">
+              Up to {{ planDetails[plan as keyof typeof planDetails].maxUsers }} 
+              {{ planDetails[plan as keyof typeof planDetails].maxUsers === 999 ? 'unlimited' : '' }} users
+            </div>
+            <ul>
+              <li *ngFor="let feature of planDetails[plan as keyof typeof planDetails].features">
+                <i class="icon-check"></i> {{ feature }}
+              </li>
+            </ul>
+          </div>
+          
+          <div class="plan-actions">
+            <button 
+              *ngIf="plan !== organization?.plan && plan !== 'custom'"
+              class="btn btn-primary"
+              (click)="upgradePlan(plan as any)">
+              {{ plan === 'starter' ? 'Downgrade' : 'Upgrade' }} to {{ plan | titlecase }}
+            </button>
+            <button 
+              *ngIf="plan === 'custom'"
+              class="btn btn-secondary">
+              Contact Sales
+            </button>
+            <span *ngIf="plan === organization?.plan" class="current-plan-text">
+              Current Plan
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="subscription-actions" *ngIf="organization?.subscription">
+        <button class="btn btn-danger" (click)="cancelSubscription()">
+          Cancel Subscription
+        </button>
+        <small class="cancel-note">
+          Your subscription will remain active until {{ formatDate(organization.subscription.currentPeriodEnd) }}
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

@@ -33,6 +33,28 @@
         <span class="nav-text">Projects</span>
       </a>
 
+      <a 
+        *ngIf="canAccessOrganization()"
+        routerLink="/organization" 
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/organization')"
+      >
+        <span class="nav-icon">👥</span>
+        <span class="nav-text">Team</span>
+      </a>
+
+      <a 
+        *ngIf="canAccessBilling()"
+        routerLink="/billing" 
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/billing')"
+      >
+        <span class="nav-icon">💳</span>
+        <span class="nav-text">Billing</span>
+      </a>
+
       <button 
         (click)="onNewProject()" 
         class="nav-link nav-button"
@@ -105,6 +127,26 @@
       >
         <span class="nav-icon">📁</span>
         Projects
+      </a>
+
+      <a 
+        *ngIf="canAccessOrganization()"
+        routerLink="/organization" 
+        class="mobile-link"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">👥</span>
+        Team
+      </a>
+
+      <a 
+        *ngIf="canAccessBilling()"
+        routerLink="/billing" 
+        class="mobile-link"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">💳</span>
+        Billing
       </a>
 
       <button 
