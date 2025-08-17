@@ -86,7 +86,7 @@
       <div class="team-list">
         <div *ngFor="let member of teamMembers" class="team-member">
           <div class="member-avatar">
-            <span>{{ (member.firstName?.[0] || member.username[0]) | uppercase }}</span>
+            <span>{{ (member.firstName && member.firstName[0] || member.username[0]) | uppercase }}</span>
           </div>
           
           <div class="member-info">
@@ -272,7 +272,7 @@
           Cancel Subscription
         </button>
         <small class="cancel-note">
-          Your subscription will remain active until {{ formatDate(organization.subscription?.currentPeriodEnd) }}
+          Your subscription will remain active until {{ formatDate(organization?.subscription?.currentPeriodEnd) }}
         </small>
       </div>
     </div>

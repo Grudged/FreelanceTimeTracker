@@ -61,10 +61,12 @@ export class ModernNavbarComponent {
 
   // Role-based navigation helpers
   isOwnerOrAdmin(): boolean {
-    if (!this.currentUser) return false;
-    // TODO: Check actual user role from organization
-    // For now, assume all logged-in users have access
+    // Temporarily allow all users to see SaaS features for testing
     return true;
+    // if (!this.currentUser) return false;
+    // // TODO: Check actual user role from organization
+    // // For now, assume all logged-in users have access
+    // return true;
   }
 
   canAccessBilling(): boolean {
