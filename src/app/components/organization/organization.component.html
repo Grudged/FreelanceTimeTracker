@@ -229,7 +229,7 @@
           <div class="plan-header">
             <h4>{{ plan | titlecase }}</h4>
             <div class="plan-price">
-              <span class="price">${{ planDetails[plan as keyof typeof planDetails].price }}</span>
+              <span class="price">${{ getPlanDetails(plan).price }}</span>
               <span class="period" *ngIf="plan !== 'custom'">/month</span>
             </div>
             <span *ngIf="plan === 'professional'" class="recommended-badge">Recommended</span>
@@ -238,11 +238,11 @@
           
           <div class="plan-features">
             <div class="user-limit">
-              Up to {{ planDetails[plan as keyof typeof planDetails].maxUsers }} 
-              {{ planDetails[plan as keyof typeof planDetails].maxUsers === 999 ? 'unlimited' : '' }} users
+              Up to {{ getPlanDetails(plan).maxUsers }} 
+              {{ getPlanDetails(plan).maxUsers === 999 ? 'unlimited' : '' }} users
             </div>
             <ul>
-              <li *ngFor="let feature of planDetails[plan as keyof typeof planDetails].features">
+              <li *ngFor="let feature of getPlanDetails(plan).features">
                 <i class="icon-check"></i> {{ feature }}
               </li>
             </ul>
@@ -252,7 +252,7 @@
             <button 
               *ngIf="plan !== organization?.plan && plan !== 'custom'"
               class="btn btn-primary"
-              (click)="upgradePlan(plan as any)">
+              (click)="upgradePlan(plan)">
               {{ plan === 'starter' ? 'Downgrade' : 'Upgrade' }} to {{ plan | titlecase }}
             </button>
             <button 
@@ -272,7 +272,7 @@
           Cancel Subscription
         </button>
         <small class="cancel-note">
-          Your subscription will remain active until {{ formatDate(organization.subscription.currentPeriodEnd) }}
+          Your subscription will remain active until {{ formatDate(organization.subscription?.currentPeriodEnd) }}
         </small>
       </div>
     </div>

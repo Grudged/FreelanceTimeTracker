@@ -229,7 +229,7 @@ export class OrganizationComponent implements OnInit {
     this.showUpgradeModal = true;
   }
 
-  upgradePlan(newPlan: 'starter' | 'professional' | 'enterprise' | 'custom'): void {
+  upgradePlan(newPlan: string): void {
     if (!this.isOwner) {
       this.toastService.error('Error', 'Only organization owners can change subscription plans');
       return;
@@ -237,8 +237,8 @@ export class OrganizationComponent implements OnInit {
 
     // TODO: Implement Stripe integration
     if (this.organization) {
-      this.organization.plan = newPlan;
-      this.organization.maxUsers = this.planDetails[newPlan].maxUsers;
+      this.organization.plan = newPlan as any;
+      this.organization.maxUsers = this.getPlanDetails(newPlan).maxUsers;
       this.showUpgradeModal = false;
       this.toastService.success('Success', `Plan upgraded to ${newPlan}`);
     }
@@ -254,6 +254,11 @@ export class OrganizationComponent implements OnInit {
       // TODO: Implement API call
       this.toastService.warning('Subscription Canceled', 'Your subscription will remain active until the current billing period ends');
     }
+  }
+
+  // Plan Details Helper
+  getPlanDetails(plan: string): any {
+    return this.planDetails[plan as keyof typeof this.planDetails] || this.planDetails.starter;
   }
 
   // Utility Methods
