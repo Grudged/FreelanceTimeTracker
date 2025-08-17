@@ -1,0 +1,146 @@
+<div class="project-form-overlay" (click)="closeForm()">
+  <div class="project-form-modal" (click)="$event.stopPropagation()">
+    <div class="form-header">
+      <h2>Create New Project</h2>
+      <button class="close-btn" (click)="closeForm()" aria-label="Close form">×</button>
+    </div>
+    
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" class="project-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="title">Project Title *</label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            class="form-control"
+            [class.error]="isFieldInvalid('title')"
+            placeholder="Enter project title"
+          />
+          <div *ngIf="isFieldInvalid('title')" class="error-message">
+            Project title is required
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="client">Client *</label>
+          <input
+            type="text"
+            id="client"
+            formControlName="client"
+            class="form-control"
+            [class.error]="isFieldInvalid('client')"
+            placeholder="Enter client name"
+          />
+          <div *ngIf="isFieldInvalid('client')" class="error-message">
+            Client name is required
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-control"
+          rows="3"
+          placeholder="Enter project description"
+        ></textarea>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="hourlyRate">Hourly Rate *</label>
+          <div class="input-group">
+            <select formControlName="currency" class="currency-select">
+              <option value="USD">$</option>
+              <option value="EUR">€</option>
+              <option value="GBP">£</option>
+              <option value="CAD">C$</option>
+              <option value="AUD">A$</option>
+            </select>
+            <input
+              type="number"
+              id="hourlyRate"
+              formControlName="hourlyRate"
+              class="form-control"
+              [class.error]="isFieldInvalid('hourlyRate')"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div *ngIf="isFieldInvalid('hourlyRate')" class="error-message">
+            Hourly rate is required
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="estimatedHours">Estimated Hours</label>
+          <input
+            type="number"
+            id="estimatedHours"
+            formControlName="estimatedHours"
+            class="form-control"
+            placeholder="0"
+            min="0"
+            step="0.5"
+          />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>
+          <input
+            type="checkbox"
+            formControlName="isContract"
+            class="checkbox"
+          />
+          This is a contract project
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label for="tags">Tags</label>
+        <input
+          type="text"
+          id="tags"
+          formControlName="tagsInput"
+          class="form-control"
+          placeholder="Enter tags separated by commas (e.g., Angular, Node.js, UI/UX)"
+        />
+        <small class="form-hint">Separate multiple tags with commas</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea
+          id="notes"
+          formControlName="notes"
+          class="form-control"
+          rows="3"
+          placeholder="Any additional notes about the project"
+        ></textarea>
+      </div>
+      
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="projectForm.invalid || isLoading"
+        >
+          <span *ngIf="isLoading" class="spinner"></span>
+          {{ isLoading ? 'Creating...' : 'Create Project' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

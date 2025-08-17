@@ -1,0 +1,181 @@
+<div class="dashboard-container">
+  <!-- Navigation Header -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <h1>Stack to the Future</h1>
+      <div class="brand-logo" title="GG Logo"></div>
+      <span class="tagline">Time Tracker</span>
+    </div>
+    
+    <div class="nav-menu">
+      <a routerLink="/projects" class="nav-link btn-link">Projects</a>
+      <button (click)="openProjectForm(); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
+      
+      <app-theme-selector></app-theme-selector>
+      
+      <div class="profile-dropdown">
+        <button class="profile-btn" (click)="toggleProfileMenu()">
+          <span>{{ currentUser?.firstName || currentUser?.username }}</span>
+          <span class="avatar">
+            {{ getInitials() }}
+          </span>
+        </button>
+        
+        <div class="dropdown-menu" [class.active]="showProfileMenu">
+          <a routerLink="/profile" class="dropdown-item">Profile</a>
+          <button (click)="logout()" class="dropdown-item logout-btn">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Content -->
+  <main class="dashboard-main">
+    <div class="dashboard-header">
+      <div>
+        <h2>Welcome back, {{ currentUser?.firstName || currentUser?.username }}!</h2>
+        <p class="dashboard-subtitle">Here's what's happening with your projects today.</p>
+      </div>
+      
+      <!-- Test Toast Button (you can remove this later) -->
+      <button (click)="testToast()" class="btn btn-secondary" style="margin-right: 1rem;">
+        Test Toast 🎉
+      </button>
+      <!---<button (click)="openProjectForm(); $event.preventDefault()" class="btn btn-primary">New Project</button>--->
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Active Projects</h3>
+          <span class="stat-icon projects">📁</span>
+        </div>
+        <div class="stat-value">{{ projectStats?.active || 0 }}</div>
+        <div class="stat-change positive">{{ projectStats?.total || 0 }} total</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Hours This Week</h3>
+          <span class="stat-icon time">⏰</span>
+        </div>
+        <div class="stat-value">{{ weeklyStats?.totalHours?.toFixed(1) || '0.0' }}</div>
+        <div class="stat-change">{{ weeklyStats?.entriesCount || 0 }} entries</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Weekly Earnings</h3>
+          <span class="stat-icon earnings">💰</span>
+        </div>
+        <div class="stat-value">${{ weeklyStats?.totalEarnings?.toFixed(0) || '0' }}</div>
+        <div class="stat-change">~${{ getAvgHourlyRate() }}/hr avg</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <h3>Completed Projects</h3>
+          <span class="stat-icon completed">✅</span>
+        </div>
+        <div class="stat-value">{{ projectStats?.completed || 0 }}</div>
+        <div class="stat-change">All time</div>
+      </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="dashboard-section">
+      <div class="section-header">
+        <h3>Active Projects</h3>
+        <a routerLink="/projects" class="view-all-link">View All</a>
+      </div>
+      
+      <div class="projects-grid" *ngIf="recentProjects.length > 0; else noProjects">
+        <div 
+          class="project-card" 
+          *ngFor="let project of recentProjects"
+          (click)="navigateToProject(project._id)"
+        >
+          <div class="project-header">
+            <div>
+              <h4>{{ project.title }}</h4>
+              <p class="project-client">{{ project.client }}</p>
+            </div>
+            <span class="project-status" [class]="getStatusClass(project.status)">
+              {{ project.status }}
+            </span>
+          </div>
+          
+          <div class="project-stats">
+            <div class="project-stat">
+              <span class="stat-label">Hours</span>
+              <span class="stat-value">{{ project.totalHoursWorked.toFixed(1) }}</span>
+            </div>
+            <div class="project-stat">
+              <span class="stat-label">Rate</span>
+              <span class="stat-value">${{ project.hourlyRate }}/hr</span>
+            </div>
+            <div class="project-stat">
+              <span class="stat-label">Earned</span>
+              <span class="stat-value">${{ project.totalEarnings.toFixed(0) }}</span>
+            </div>
+          </div>
+          
+          <div class="project-progress" *ngIf="project.estimatedHours">
+            <div class="progress-bar">
+              <div 
+                class="progress-fill" 
+                [style.width.%]="getProjectProgress(project)"
+              ></div>
+            </div>
+            <span class="progress-text">
+              {{ getProjectProgress(project).toFixed(0) }}% complete
+            </span>
+          </div>
+
+          <!-- Time Tracking Controls -->
+          <div class="time-tracking-controls">
+            <button 
+              *ngIf="!isTimerRunning(project._id)"
+              (click)="startTimer(project._id, project.title); $event.stopPropagation()"
+              class="btn-timer btn-start"
+              title="Start timer for {{ project.title }}"
+            >
+              <span class="timer-icon">▶️</span>
+              Start Work
+            </button>
+            
+            <button 
+              *ngIf="isTimerRunning(project._id)"
+              (click)="stopTimer(project._id); $event.stopPropagation()"
+              class="btn-timer btn-stop"
+              title="Stop timer for {{ project.title }}"
+            >
+              <span class="timer-icon">⏸️</span>
+              Stop Work
+              <span class="timer-duration">{{ getTimerDuration(project._id) }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noProjects>
+        <div class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h3>No active projects yet</h3>
+          <p>Create your first project to start tracking time and managing your freelance work.</p>
+          <button (click)="openProjectForm()" class="btn btn-primary">
+            Create Your First Project
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </main>
+  
+  <!-- Project Form Modal -->
+  <app-project-form 
+    *ngIf="showProjectForm"
+    (formClosed)="onProjectFormClosed()"
+    (projectCreated)="onProjectCreated($event)"
+  ></app-project-form>
+</div>

@@ -1,0 +1,136 @@
+<nav class="modern-navbar">
+  <div class="navbar-container">
+    <!-- Brand Section -->
+    <div class="nav-brand">
+      <div class="brand-content">
+        <div class="brand-logo" title="GG Logo"></div>
+        <div class="brand-text">
+          <h1 class="brand-title">Stack to the Future</h1>
+          <span class="brand-tagline">Time Tracker</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="nav-links">
+      <a 
+        routerLink="/dashboard" 
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/dashboard')"
+      >
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      
+      <a 
+        routerLink="/projects" 
+        routerLinkActive="active"
+        class="nav-link"
+        [class.active]="isActiveRoute('/projects')"
+      >
+        <span class="nav-icon">📁</span>
+        <span class="nav-text">Projects</span>
+      </a>
+
+      <button 
+        (click)="onNewProject()" 
+        class="nav-link nav-button"
+        title="Create new project"
+      >
+        <span class="nav-icon">➕</span>
+        <span class="nav-text">New Project</span>
+      </button>
+    </div>
+
+    <!-- User Section -->
+    <div class="nav-user">
+      <app-theme-selector></app-theme-selector>
+      
+      <div class="user-dropdown" [class.open]="showUserMenu">
+        <button 
+          class="user-button" 
+          (click)="toggleUserMenu()"
+          [attr.aria-expanded]="showUserMenu"
+        >
+          <span class="user-name">{{ getUserDisplayName() }}</span>
+          <div class="user-avatar">
+            {{ getUserInitials() }}
+          </div>
+          <span class="dropdown-arrow" [class.rotated]="showUserMenu">⌄</span>
+        </button>
+        
+        <div class="dropdown-menu" [class.visible]="showUserMenu">
+          <a routerLink="/profile" class="dropdown-item">
+            <span class="dropdown-icon">👤</span>
+            Profile
+          </a>
+          <button (click)="onLogout()" class="dropdown-item logout-btn">
+            <span class="dropdown-icon">🚪</span>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button 
+      class="mobile-menu-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="showMobileMenu"
+      aria-label="Toggle navigation menu"
+    >
+      <span class="hamburger-line" [class.active]="showMobileMenu"></span>
+      <span class="hamburger-line" [class.active]="showMobileMenu"></span>
+      <span class="hamburger-line" [class.active]="showMobileMenu"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.visible]="showMobileMenu">
+    <div class="mobile-links">
+      <a 
+        routerLink="/dashboard" 
+        class="mobile-link"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">📊</span>
+        Dashboard
+      </a>
+      
+      <a 
+        routerLink="/projects" 
+        class="mobile-link"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">📁</span>
+        Projects
+      </a>
+
+      <button 
+        (click)="onNewProject(); closeMobileMenu()" 
+        class="mobile-link mobile-button"
+      >
+        <span class="nav-icon">➕</span>
+        New Project
+      </button>
+
+      <a 
+        routerLink="/profile" 
+        class="mobile-link"
+        (click)="closeMobileMenu()"
+      >
+        <span class="nav-icon">👤</span>
+        Profile
+      </a>
+
+      <button 
+        (click)="onLogout(); closeMobileMenu()" 
+        class="mobile-link mobile-button logout"
+      >
+        <span class="nav-icon">🚪</span>
+        Logout
+      </button>
+    </div>
+  </div>
+</nav>

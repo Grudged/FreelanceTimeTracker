@@ -1,0 +1,51 @@
+<div class="welcome-container">
+  <div class="theme-selector-container">
+    <app-theme-selector></app-theme-selector>
+  </div>
+  
+  <div class="welcome-content">
+    <div class="hero-section">
+      <h1 class="hero-title">Stack to the Future</h1>
+      <h2 class="hero-subtitle">Freelance Time Tracker</h2>
+      <p class="hero-description">
+        Track your time, manage your projects, and grow your freelance business with our comprehensive time tracking solution.
+      </p>
+    </div>
+
+    <div class="action-buttons">
+      <button 
+        class="btn btn-primary btn-lg"
+        (click)="navigateToRegister()"
+      >
+        <i class="icon-plus"></i>
+        Create New Account
+      </button>
+      
+      <button 
+        class="btn btn-outline-primary btn-lg"
+        (click)="navigateToLogin()"
+      >
+        <i class="icon-login"></i>
+        Log In
+      </button>
+    </div>
+
+    <div class="features-preview">
+      <div class="feature">
+        <i class="icon-clock"></i>
+        <h3>Time Tracking</h3>
+        <p>Accurate time tracking with detailed logs</p>
+      </div>
+      <div class="feature">
+        <i class="icon-folder"></i>
+        <h3>Project Management</h3>
+        <p>Organize your work by projects and clients</p>
+      </div>
+      <div class="feature">
+        <i class="icon-chart"></i>
+        <h3>Earnings Analytics</h3>
+        <p>Track your earnings and productivity</p>
+      </div>
+    </div>
+  </div>
+</div>

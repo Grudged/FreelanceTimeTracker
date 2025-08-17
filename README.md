@@ -15,12 +15,14 @@ A comprehensive full-stack time tracking application built for freelancers to ma
 
 ### 📱 Frontend Features
 - **Modern Angular 20** - Standalone components with latest Angular architecture  
+- **Component Architecture** - Separate .html, .css, .ts files for better maintainability
 - **Responsive Design** - Mobile-first design that works on all devices
-- **Theme Support** - Dark/light mode with theme selector component
+- **12 Premium Themes** - Professional themes including Material Design, Tokyo Night, Solarized, IBM Carbon, and more
 - **Interactive Dashboard** - Real-time project overview with visual charts
 - **Toast Notifications** - User feedback system for actions and errors
 - **Loading States** - Spinner components for better UX during API calls
 - **Route Guards** - Protected routes with authentication checks
+- **Persistent Timer** - Floating timer widget with minimize/expand functionality
 
 ### 🔧 Backend Features
 - **RESTful API** - Comprehensive endpoints for all application functionality
@@ -284,23 +286,45 @@ Or use any email/password combination when registering - the system will create 
 
 ## 🏗 Project Architecture
 
+### Component Architecture
+All Angular components follow a **separate file structure** for better maintainability:
+- `component.ts` - TypeScript logic and configuration
+- `component.html` - Template markup  
+- `component.css` - Component-specific styles
+
 ### Project Structure
 ```
 src/
 ├── app/
-│   ├── components/          # Angular components
+│   ├── components/          # Angular components (12 total)
 │   │   ├── auth/           # Authentication components
-│   │   ├── dashboard/      # Dashboard component
-│   │   ├── projects/       # Project management components
-│   │   └── welcome/        # Welcome page component
+│   │   │   ├── login/      # Login form (.ts, .html, .css)
+│   │   │   └── register/   # Registration form (.ts, .html, .css)
+│   │   ├── dashboard/      # Main dashboard (.ts, .html, .css)
+│   │   ├── projects/       # Project management (.ts, .html, .css)
+│   │   ├── project-form/   # Project creation modal (.ts, .html, .css)
+│   │   ├── modern-navbar/  # Navigation component (.ts, .html, .css)
+│   │   ├── theme-selector/ # Theme switching (.ts, .html, .css)
+│   │   ├── toast-container/ # Notifications (.ts, .html, .css)
+│   │   ├── persistent-timer/ # Floating timer (.ts, .html, .css)
+│   │   ├── loading-spinner/ # Loading states (.ts, .html, .css)
+│   │   ├── welcome/        # Landing page (.ts, .html, .css)
+│   │   └── test/           # Test component (.ts, .html, .css)
 │   ├── services/           # Angular services
+│   │   ├── auth.service.ts    # Authentication logic
+│   │   ├── project.service.ts # Project management
+│   │   ├── theme.service.ts   # Theme management (12 themes)
+│   │   ├── timer.service.ts   # Time tracking
+│   │   ├── toast.service.ts   # Notifications
+│   │   └── time-entry.service.ts # Time entries
 │   ├── guards/             # Route guards
 │   ├── interceptors/       # HTTP interceptors
 │   └── environments/       # Environment configurations
 ├── controllers/            # Express route controllers
-├── middleware/             # Express middleware
-├── models/                 # MongoDB/Mongoose models
-├── routes/                 # Express routes
+├── middleware/             # Express middleware (includes SaaS tenant isolation)
+├── models/                 # MongoDB/Mongoose models (includes SaaS models)
+├── routes/                 # Express routes (includes billing endpoints)
+├── services/               # Backend services (Stripe integration)
 └── config/                 # Configuration files
 ```
 
@@ -424,6 +448,9 @@ We welcome contributions to the FreelanceTimeTracker project!
 
 ## 📚 Additional Resources
 
+- **Theme Documentation**: See `THEMES.md` for complete theme system guide
+- **Component Guide**: See `COMPONENT_REFACTORING_GUIDE.md` for architecture details
+- **SaaS Migration**: See `SAAS_MIGRATION_GUIDE.md` for multi-tenant setup
 - **Monitoring Guide**: See `MONITORING.md` for complete Zabbix setup
 - **API Documentation**: Available at `http://localhost:3000/api` when running
 - **Docker Compose Reference**: Multi-service configuration with monitoring
@@ -445,12 +472,40 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🏆 Project Highlights
 
 ✨ **Modern Stack**: Angular 20 + Node.js 20 + MongoDB 7  
+🏗️ **Component Architecture**: All 12 components refactored to separate .html/.css/.ts files  
+🎨 **12 Premium Themes**: Material Design, Tokyo Night, Solarized, IBM Carbon, and more  
+🏢 **SaaS Ready**: Multi-tenant architecture with Stripe billing integration  
 🐳 **Docker Ready**: Full containerization with monitoring  
 📊 **Production Monitoring**: Zabbix integration with health checks  
 🔐 **Security First**: JWT authentication, CORS, Helmet protection  
 📱 **Responsive Design**: Works on desktop, tablet, and mobile  
 ⚡ **Performance Optimized**: Lazy loading, caching, and efficient queries  
 🧪 **Well Tested**: Jest + Karma testing frameworks included  
+
+## 🚀 Recent Major Improvements
+
+### **Component Architecture Overhaul** ✅
+- **12/12 components** refactored to separate file structure
+- **~5,000+ lines** of template/style code properly organized
+- **Better IDE support** with full syntax highlighting
+- **Enhanced maintainability** for team development
+- **Industry-standard** Angular best practices
+
+### **Premium Theme System** ✅
+- **12 professional themes** including developer favorites
+- **Material Design** - Google's classic design system
+- **Tokyo Night** - VS Code's most popular theme
+- **Solarized** - Scientifically designed for eye comfort
+- **IBM Carbon** - Enterprise-grade design system
+- **Cyberpunk** - Modern neon aesthetic
+- See `THEMES.md` for complete theme documentation
+
+### **SaaS Architecture** ✅
+- **Multi-tenant** organization system
+- **Stripe integration** for subscription billing
+- **4 pricing tiers** ($19-$149/month)
+- **Role-based access** control (Owner/Admin/Member/Viewer)
+- **Tenant isolation** middleware for data security
 
 **Stack to the Future - Freelance Time Tracker**  
 *Professional time tracking for modern freelancers*

@@ -1,0 +1,229 @@
+    <div class="projects-container">
+      <!-- Navigation Header -->
+      <nav class="navbar">
+        <div class="nav-brand">
+          <h1>Stack to the Future</h1>
+          <div class="brand-logo" title="GG Logo"></div>
+          <span class="tagline">Time Tracker</span>
+        </div>
+        
+        <div class="nav-menu">
+          <a routerLink="/dashboard" class="nav-link btn-link">Dashboard</a>
+          <button (click)="openProjectForm(); $event.preventDefault()" class="nav-link btn-outline">New Project</button>
+          
+          <app-theme-selector></app-theme-selector>
+          
+          <div class="profile-dropdown">
+            <button class="profile-btn" (click)="toggleProfileMenu()">
+              <span>{{ currentUser?.firstName || currentUser?.username }}</span>
+              <span class="avatar">
+                {{ getInitials() }}
+              </span>
+            </button>
+            
+            <div class="dropdown-menu" [class.active]="showProfileMenu">
+              <a routerLink="/profile" class="dropdown-item">Profile</a>
+              <button (click)="logout()" class="dropdown-item logout-btn">Logout</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Projects Content -->
+      <main class="projects-main">
+        <div class="projects-header">
+          <div>
+            <h2>Projects</h2>
+            <p class="projects-subtitle">Manage and track all your freelance projects.</p>
+          </div>
+          <button (click)="openProjectForm()" class="btn btn-primary">
+            <span class="icon">+</span>
+            New Project
+          </button>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="statusFilter">Status</label>
+              <select id="statusFilter" [(ngModel)]="filters.status" (ngModelChange)="applyFilters()" class="filter-select">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="paused">Paused</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="clientFilter">Client</label>
+              <select id="clientFilter" [(ngModel)]="filters.client" (ngModelChange)="applyFilters()" class="filter-select">
+                <option value="">All Clients</option>
+                <option *ngFor="let client of uniqueClients" [value]="client">{{ client }}</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="sortBy">Sort By</label>
+              <select id="sortBy" [(ngModel)]="filters.sortBy" (ngModelChange)="applyFilters()" class="filter-select">
+                <option value="updatedAt">Last Updated</option>
+                <option value="createdAt">Date Created</option>
+                <option value="title">Project Name</option>
+                <option value="totalEarnings">Total Earnings</option>
+                <option value="totalHoursWorked">Hours Worked</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="sortOrder">Order</label>
+              <select id="sortOrder" [(ngModel)]="filters.sortOrder" (ngModelChange)="applyFilters()" class="filter-select">
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+              </select>
+            </div>
+
+            <button (click)="clearFilters()" class="btn btn-secondary">Clear Filters</button>
+          </div>
+
+          <div class="search-row">
+            <div class="search-group">
+              <input 
+                type="text" 
+                placeholder="Search projects..." 
+                [(ngModel)]="filters.search"
+                (ngModelChange)="applyFilters()"
+                class="search-input"
+              />
+              <span class="search-icon">🔍</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="results-summary">
+          <p>Showing {{ filteredProjects.length }} of {{ allProjects.length }} projects</p>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section" *ngIf="filteredProjects.length > 0">
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h3>Earnings by Project</h3>
+              <canvas #earningsChart></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Projects by Status</h3>
+              <canvas #statusChart></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="projects-grid" *ngIf="filteredProjects.length > 0; else noProjects">
+          <div 
+            class="project-card" 
+            *ngFor="let project of filteredProjects"
+            (click)="navigateToProject(project._id)"
+          >
+            <div class="project-header">
+              <div>
+                <h4>{{ project.title }}</h4>
+                <p class="project-client">{{ project.client }}</p>
+              </div>
+              <span class="project-status" [class]="getStatusClass(project.status)">
+                {{ project.status }}
+              </span>
+            </div>
+            
+            <div class="project-description" *ngIf="project.description">
+              <p>{{ project.description }}</p>
+            </div>
+
+            <div class="project-stats">
+              <div class="project-stat">
+                <span class="stat-label">Hours</span>
+                <span class="stat-value">{{ project.totalHoursWorked.toFixed(1) }}</span>
+              </div>
+              <div class="project-stat">
+                <span class="stat-label">Rate</span>
+                <span class="stat-value">\${{ project.hourlyRate }}/hr</span>
+              </div>
+              <div class="project-stat">
+                <span class="stat-label">Earned</span>
+                <span class="stat-value">\${{ project.totalEarnings.toFixed(0) }}</span>
+              </div>
+            </div>
+            
+            <div class="project-progress" *ngIf="project.estimatedHours">
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="getProjectProgress(project)"
+                ></div>
+              </div>
+              <span class="progress-text">
+                {{ getProjectProgress(project).toFixed(0) }}% complete
+              </span>
+            </div>
+
+            <div class="project-dates">
+              <div class="date-info">
+                <span class="date-label">Created:</span>
+                <span class="date-value">{{ formatDate(project.createdAt) }}</span>
+              </div>
+              <div class="date-info" *ngIf="project.updatedAt !== project.createdAt">
+                <span class="date-label">Updated:</span>
+                <span class="date-value">{{ formatDate(project.updatedAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Timer Controls for Active Projects -->
+            <div class="timer-controls" *ngIf="project.status === 'active'">
+              <button 
+                *ngIf="!isTimerRunning(project._id)"
+                (click)="startTimer(project._id, project.title); $event.stopPropagation()"
+                class="btn-timer btn-start"
+                title="Start timer for {{ project.title }}"
+              >
+                <span class="timer-icon">▶️</span>
+                Start Timer
+              </button>
+              
+              <button 
+                *ngIf="isTimerRunning(project._id)"
+                (click)="stopTimer(); $event.stopPropagation()"
+                class="btn-timer btn-stop"
+                title="Stop timer for {{ project.title }}"
+              >
+                <span class="timer-icon">⏸️</span>
+                Stop Timer
+                <span class="timer-duration">{{ getTimerDuration(project._id) }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Projects Template -->
+        <ng-template #noProjects>
+          <div class="empty-state">
+            <div class="empty-icon">📁</div>
+            <h3>{{ getEmptyStateTitle() }}</h3>
+            <p>{{ getEmptyStateMessage() }}</p>
+            <button (click)="clearFilters()" class="btn btn-secondary" *ngIf="hasActiveFilters()">
+              Clear Filters
+            </button>
+            <button (click)="openProjectForm()" class="btn btn-primary">
+              Create Your First Project
+            </button>
+          </div>
+        </ng-template>
+      </main>
+      
+      <!-- Project Form Modal -->
+      <app-project-form 
+        *ngIf="showProjectForm"
+        (formClosed)="onProjectFormClosed()"
+        (projectCreated)="onProjectCreated($event)"
+      ></app-project-form>
+    </div>

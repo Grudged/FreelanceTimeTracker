@@ -1,0 +1,27 @@
+<div class="theme-selector" [class.open]="isOpen">
+  <button 
+    class="theme-button"
+    (click)="toggleDropdown()"
+    [attr.aria-expanded]="isOpen"
+    aria-label="Select theme"
+  >
+    <span class="theme-icon">🎨</span>
+    <span class="theme-name">{{ currentTheme.displayName }}</span>
+    <span class="dropdown-arrow" [class.rotated]="isOpen">▼</span>
+  </button>
+  
+  <div class="theme-dropdown" [class.visible]="isOpen">
+    <div class="theme-options">
+      <button
+        *ngFor="let theme of themes"
+        class="theme-option"
+        [class.active]="theme.id === currentTheme.id"
+        (click)="selectTheme(theme)"
+      >
+        <div class="theme-preview" [style.background]="theme.colors.buttonPrimary"></div>
+        <span class="theme-display-name">{{ theme.displayName }}</span>
+        <span *ngIf="theme.id === currentTheme.id" class="check-mark">✓</span>
+      </button>
+    </div>
+  </div>
+</div>
