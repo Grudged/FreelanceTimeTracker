@@ -9,6 +9,8 @@ class ProjectController {
       const status = req.query.status;
       const skip = (page - 1) * limit;
 
+      console.log('🔍 Getting projects for user:', req.user._id, 'username:', req.user.username);
+      
       let filter = { userId: req.user._id };
       if (status) {
         filter.status = status;
@@ -19,6 +21,8 @@ class ProjectController {
         .skip(skip)
         .limit(limit);
 
+      console.log('📊 Found', projects.length, 'projects for filter:', filter);
+      
       const total = await Project.countDocuments(filter);
 
       res.json({
@@ -244,6 +248,7 @@ class ProjectController {
   static async getProjectStats(req, res) {
     try {
       const userId = req.user._id;
+      console.log('📈 Getting project stats for user:', userId, 'username:', req.user.username);
 
       const stats = await Project.aggregate([
         { $match: { userId } },

@@ -287,20 +287,8 @@ export class ProjectService {
   }
 
   getProjectStats(): Observable<{ message: string; stats: ProjectStats }> {
-    // Recalculate stats from current dummy data
-    const stats: ProjectStats = {
-      total: this.dummyProjects.length,
-      active: this.dummyProjects.filter(p => p.status === 'active').length,
-      completed: this.dummyProjects.filter(p => p.status === 'completed').length,
-      paused: this.dummyProjects.filter(p => p.status === 'paused').length,
-      totalHours: this.dummyProjects.reduce((sum, p) => sum + p.totalHoursWorked, 0),
-      totalEarnings: this.dummyProjects.reduce((sum, p) => sum + p.totalEarnings, 0)
-    };
-
-    return of({
-      message: 'Project stats retrieved successfully',
-      stats: stats
-    });
+    console.log('📊 Making real API call to /api/projects/stats');
+    return this.http.get<{ message: string; stats: ProjectStats }>(`${this.apiUrl}/stats`);
   }
 
   // Utility methods

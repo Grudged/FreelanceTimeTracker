@@ -91,7 +91,8 @@ projectSchema.methods.updateTotals = async function() {
 
 // Virtual for formatted earnings
 projectSchema.virtual('formattedEarnings').get(function() {
-  return `${this.currency} ${this.totalEarnings.toFixed(2)}`;
+  const earnings = this.totalEarnings || 0;
+  return `${this.currency} ${earnings.toFixed(2)}`;
 });
 
 // Virtual for project duration

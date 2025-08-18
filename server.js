@@ -19,9 +19,11 @@ const corsOptions = {
     console.log('🔍 CORS request from origin:', origin);
     const allowedOrigins = [
       'http://localhost:4200',
+      'http://localhost:4201',
       'http://127.0.0.1:43503',
       'http://localhost:43503',
-      'http://127.0.0.1:4200'
+      'http://127.0.0.1:4200',
+      'http://127.0.0.1:4201'
     ];
     
     if (!origin || allowedOrigins.includes(origin)) {

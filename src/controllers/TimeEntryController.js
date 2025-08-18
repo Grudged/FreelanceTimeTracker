@@ -165,11 +165,15 @@ class TimeEntryController {
         });
       }
 
+      // Calculate hours worked
+      const hoursWorked = (end - start) / (1000 * 60 * 60);
+      
       const timeEntryData = {
         projectId,
         userId: req.user._id,
         startTime: start,
         endTime: end,
+        hoursWorked,
         description,
         workLog,
         date: date ? new Date(date) : new Date(),

@@ -112,11 +112,11 @@ This starts:
 - ✅ PostgreSQL for Zabbix data
 - ✅ Health checks and metrics collection
 
-### 📋 Manual Development Setup
+### 📋 Local Development Setup (Recommended)
 
-For development without Docker:
+For optimal development experience with hot reload and no Docker sync issues:
 
-#### Backend Setup
+#### Quick Setup
 
 1. **Clone the repository**
    ```bash
@@ -124,64 +124,72 @@ For development without Docker:
    cd FreelanceTimeTracker
    ```
 
-2. **Install backend dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Configure environment variables**
+3. **Start MongoDB in Docker (database only)**
    ```bash
-   cp .env.example .env
+   docker run -d --name mongodb-local -p 27017:27017 \
+     -e MONGO_INITDB_ROOT_USERNAME=admin \
+     -e MONGO_INITDB_ROOT_PASSWORD=password123 \
+     mongo:latest
    ```
-   
-   Update `.env` with your configuration:
+
+4. **Configure environment variables**
+   Update `.env` with local configuration:
    ```env
    NODE_ENV=development
    PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/freelance-timetracker
+   MONGODB_URI=mongodb://admin:password123@localhost:27017/freelance-timetracker?authSource=admin
    JWT_SECRET=your-super-secret-jwt-key-change-in-production
    JWT_EXPIRE=7d
-   FRONTEND_URL=http://localhost:4200
+   FRONTEND_URL=http://localhost:4201
    BCRYPT_ROUNDS=12
    ```
 
-4. **Start MongoDB**
+5. **Start both frontend and backend**
    ```bash
-   # If using local MongoDB
-   mongod
-   
-   # Or make sure MongoDB Atlas connection is configured
-   ```
-
-5. **Start the backend server**
-   ```bash
-   npm start
-   # or for development with auto-reload
+   # Terminal 1: Start backend with hot reload
    npm run dev
+   
+   # Terminal 2: Start Angular frontend
+   ng serve --port 4201
    ```
 
-### Frontend Setup
-
-1. **Install Angular CLI** (if not already installed)
-   ```bash
-   npm install -g @angular/cli@20
-   ```
-
-2. **Install frontend dependencies**
-   ```bash
-   # Frontend dependencies are already included in package.json
-   npm install
-   ```
-
-3. **Start the Angular development server**
-   ```bash
-   ng serve
-   ```
-
-4. **Access the application**
-   - Frontend: http://localhost:4200
+6. **Access the application**
+   - Frontend: http://localhost:4201
    - Backend API: http://localhost:3000
-   - API Documentation: http://localhost:3000/api
+   - Health Check: http://localhost:3000/api/health
+
+#### Why This Setup?
+
+✅ **Hot Reload**: Code changes reflect immediately  
+✅ **No Docker Sync Issues**: Direct file system access  
+✅ **Fast Development**: No container restart delays  
+✅ **Real-time Development**: Best developer experience  
+✅ **Production-like Database**: MongoDB in container for consistency
+
+### Alternative: Docker-Only Setup
+
+If you prefer full Docker containerization (may have sync delays):
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd FreelanceTimeTracker
+
+# Start the complete stack (app + database + monitoring)
+docker-compose up -d
+
+# Access the applications
+# - FreelanceTimeTracker: http://localhost:3000
+# - Frontend development: ng serve (http://localhost:4200)  
+# - Zabbix Monitoring: http://localhost:8080 (Admin/zabbix)
+```
+
+**Note**: Docker setup may have file sync issues during development. Use local setup above for better development experience.
 
 ## 📊 Monitoring & Health Checks
 
@@ -331,9 +339,18 @@ src/
 ### Available Scripts
 
 ```bash
-# Development
-npm run dev              # Start backend with nodemon
-ng serve                 # Start Angular development server
+# Development (Local Setup - Recommended)
+npm run dev              # Start backend with nodemon hot reload
+ng serve --port 4201     # Start Angular development server on port 4201
+
+# Database Management
+docker run -d --name mongodb-local -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=admin \
+  -e MONGO_INITDB_ROOT_PASSWORD=password123 \
+  mongo:latest           # Start MongoDB container
+
+# Health Checks
+curl http://localhost:3000/api/health  # Check backend API health
 
 # Testing
 npm test                 # Run Jest tests
@@ -347,6 +364,10 @@ npm run watch            # Build and watch for changes
 
 # Linting
 npm run lint             # Lint code with Angular ESLint
+
+# Docker (Alternative)
+docker-compose up -d     # Start full containerized stack
+docker-compose down      # Stop all containers
 ```
 
 ### Docker Development Workflow
@@ -426,25 +447,41 @@ We welcome contributions to the FreelanceTimeTracker project!
 
 ### Common Issues
 
-**Application not starting:**
-- Check Node.js version (requires v20+)
-- Verify MongoDB is running: `docker ps | grep mongodb`
+**Application not starting (Local Setup):**
+- Check Node.js version (requires v20+): `node --version`
+- Verify MongoDB container is running: `docker ps | grep mongodb-local`
 - Check environment variables in `.env` file
+- Test backend health: `curl http://localhost:3000/api/health`
+- Ensure ports 3000 and 4201 are not in use
 
-**Docker issues:**
+**MongoDB connection issues:**
+- Restart MongoDB container: `docker restart mongodb-local`
+- Check MongoDB logs: `docker logs mongodb-local`
+- Verify connection string in `.env` matches container credentials
+- Test database connection: `curl http://localhost:3000/api/health`
+
+**Hot reload not working:**
+- Use local setup instead of Docker for development
+- Kill any existing Angular processes: `pkill -f "ng serve"`
+- Restart backend: `npm run dev`
+- Clear Angular cache: `ng cache clean`
+
+**Port conflicts:**
+- Kill processes on port 3000: `lsof -ti:3000 | xargs kill -9`
+- Kill processes on port 4201: `lsof -ti:4201 | xargs kill -9`
+- Use different ports: `ng serve --port 4202`
+
+**Docker issues (if using Docker setup):**
 - Clean up containers: `docker-compose down -v`
 - Rebuild images: `docker-compose build --no-cache`
 - Check Docker logs: `docker-compose logs [service-name]`
+- **Recommended**: Switch to local development setup
 
 **Frontend build errors:**
 - Clear Angular cache: `ng cache clean`
 - Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
 - Check Angular CLI version: `ng version`
-
-**Database connection errors:**
-- Verify MongoDB URI format in environment variables
-- Check MongoDB authentication credentials
-- Test connection: `curl http://localhost:3000/api/health`
+- Ensure Angular CLI v20+: `npm install -g @angular/cli@20`
 
 ## 📚 Additional Resources
 
@@ -483,6 +520,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 🧪 **Well Tested**: Jest + Karma testing frameworks included  
 
 ## 🚀 Recent Major Improvements
+
+### **Optimized Development Setup** ✅ *NEW*
+- **Local development environment** with hot reload
+- **No Docker sync issues** - direct file system access
+- **Instant code changes** - see updates immediately
+- **MongoDB in container** - production-like database
+- **Dual-terminal setup** - backend and frontend simultaneously
+- **Port 4201 frontend** - eliminates conflicts with other Angular projects
 
 ### **Component Architecture Overhaul** ✅
 - **12/12 components** refactored to separate file structure

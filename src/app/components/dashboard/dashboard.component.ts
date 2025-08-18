@@ -55,23 +55,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadDashboardData(): void {
+    console.log('🔄 Loading dashboard data...');
+    
     // Load project statistics
+    console.log('📊 Calling getProjectStats...');
     this.projectService.getProjectStats().subscribe({
       next: (response) => {
+        console.log('✅ Project stats response:', response);
         this.projectStats = response.stats;
       },
       error: (error) => {
-        console.error('Error loading project stats:', error);
+        console.error('❌ Error loading project stats:', error);
+        this.projectStats = null;
       }
     });
 
     // Load weekly time statistics
+    console.log('⏰ Calling getTimeStats...');
     this.timeEntryService.getTimeStats(undefined, 'week').subscribe({
       next: (response) => {
+        console.log('✅ Time stats response:', response);
         this.weeklyStats = response.stats;
       },
       error: (error) => {
-        console.error('Error loading time stats:', error);
+        console.error('❌ Error loading time stats:', error);
+        this.weeklyStats = null;
       }
     });
 

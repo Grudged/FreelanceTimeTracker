@@ -33,6 +33,9 @@ services:
       JWT_EXPIRE: 7d
       FRONTEND_URL: http://localhost:4200
       BCRYPT_ROUNDS: 12
+    volumes:
+      - ./src:/app/src
+      - ./server.js:/app/server.js
     ports:
       - "3000:3000"
     depends_on:

@@ -326,27 +326,13 @@ export class TimeEntryService {
   }
 
   getTimeStats(projectId?: string, period?: 'week' | 'month' | 'year'): Observable<{ message: string; stats: TimeStats; period: string }> {
-    let filteredEntries = this.dummyTimeEntries;
+    console.log('⏰ Making real API call to /api/time-entries/stats');
     
-    if (projectId) {
-      filteredEntries = this.dummyTimeEntries.filter(entry => entry.projectId === projectId);
-    }
-
-    // For simplicity, returning weekly stats regardless of period
-    // In a real implementation, you'd filter by actual date ranges
-    const stats: TimeStats = {
-      totalHours: filteredEntries.reduce((sum, entry) => sum + entry.hoursWorked, 0),
-      totalEarnings: filteredEntries.reduce((sum, entry) => sum + entry.earnings, 0),
-      entriesCount: filteredEntries.length,
-      avgHoursPerEntry: filteredEntries.length > 0 ? 
-        filteredEntries.reduce((sum, entry) => sum + entry.hoursWorked, 0) / filteredEntries.length : 0
-    };
-
-    return of({
-      message: 'Time stats retrieved successfully',
-      stats: period === 'week' ? this.dummyWeeklyStats : stats,
-      period: period || 'week'
-    });
+    let params: any = {};
+    if (projectId) params.projectId = projectId;
+    if (period) params.period = period;
+    
+    return this.http.get<{ message: string; stats: TimeStats; period: string }>(`${this.apiUrl}/stats`, { params });
   }
 
   getDailySummary(date?: string): Observable<{ message: string } & DailySummary> {
